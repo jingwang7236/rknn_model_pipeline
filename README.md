@@ -20,7 +20,8 @@ make install  # 可以将相关文件拷贝到目标目录
 包含行人检测、人脸检测、头部检测、手机检测;
 
 #### 2.1.1. 行人检测
-模型结构：yolov10-coco
+模型结构：[yolov10](https://github.com/THU-MIG/yolov10)
+
 
 调用方法：
 ```
@@ -42,7 +43,10 @@ ret = release_yolov10_model(&rknn_app_ctx); // 释放模型资源
 
 #### 2.1.2. 人脸检测
 
-模型结构：RetinaFace
+模型结构：[RetinaFace](https://github.com/airockchip/rknn_model_zoo/tree/main/examples/RetinaFace)
+
+链接：
+
 
 调用方法：
 ```
