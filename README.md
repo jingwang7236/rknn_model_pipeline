@@ -3,8 +3,11 @@
 
 ```
 rm -r build
-rm -r install
-./build-linux.sh -t rk3588
+mkdir build
+cd build
+cmake ..
+make -j16
+make install  # 可以将相关文件拷贝到目标目录
 ```
 
 ## 模型调用说明
