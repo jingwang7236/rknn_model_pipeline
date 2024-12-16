@@ -11,7 +11,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include/utils
     ${CMAKE_SOURCE_DIR}/include/outer_model  # 外部模型使用的头文件，提供给端侧使用
     ${CMAKE_SOURCE_DIR}/include/inter_model  # 内部模型使用的头文件
-    ${CMAKE_SOURCE_DIR}/third_party/rknpu2/include
+    ${CMAKE_SOURCE_DIR}/third_party/rknpu2/include  # 第三方库头文件
     ${CMAKE_SOURCE_DIR}/third_party/librga/include
     ${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/include
     # ${CMAKE_SOURCE_DIR}/third_party/opencv/opencv-linux-aarch64/include
@@ -40,12 +40,20 @@ add_library(
     ${HEADER}  # 自己调用的头文件全部打包在静态库中，提供给外部使用的头文件放在model_params.hpp和model_func.cpp中
     ${SOURCE}
 )
-# set(OpenCV_DIR ${CMAKE_SOURCE_DIR}/third_party/opencv/opencv-linux-aarch64/share/OpenCV)
+
+# 第三方动态库查找和链接
 find_package(OpenCV REQUIRED)
-# message("OpenCV_DIR: ${OpenCV_DIR}")
 message("OpenCV_LIBS:${OpenCV_LIBS}")
+# find_library(RKNN_RT_LIB NAMES rknnrt PATHS /usr/lib)
+# message("RKNN_RT_LIB:${RKNN_RT_LIB}")
+# find_library(RGA_LIB NAMES rga PATHS /usr/lib)
+# message("RGA_LIB:${RGA_LIB}")
 
 # 手动指定静态库路径
+set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/third_party/rknpu2/Linux/aarch64/librknnrt.so)
+set(RGA_LIB ${CMAKE_SOURCE_DIR}/third_party/librga/Linux/aarch64/librga.so)
+set(jpeg_turbo ${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/Linux/aarch64/libturbojpeg.a)
+
 # set(OpenCV_STATIC_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/opencv/opencv-linux-aarch64/lib)
 # set(OpenCV_STATIC_LIBS
 #     ${OpenCV_STATIC_LIB_PATH}/libopencv_core.a
@@ -65,10 +73,6 @@ set(EXTRA_LIBS
     dl
 )
 message("EXTRA_LIBS:${EXTRA_LIBS}")
-
-set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/third_party/rknpu2/Linux/aarch64/librknnrt.so)
-set(RGA_LIB ${CMAKE_SOURCE_DIR}/third_party/librga/Linux/aarch64/librga.so)
-set(jpeg_turbo ${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/Linux/aarch64/libturbojpeg.a)
 
 # find_package(Threads REQUIRED)
 # if(Threads_FOUND)
