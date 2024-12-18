@@ -103,7 +103,12 @@ ret = release_retinanet_model(&rknn_app_ctx);  //释放
 ### 2.2. 分类
 包含人脸属性；
 
-#### 2.2.1. 人脸属性
+#### 2.2.1. 人脸属性/可疑人员
+
+模型组合：头部检测 + 人脸属性；输入为场景大图，先经过头部检测模型，再将检测到的小图经过人脸属性模型推理，得到人脸属性结果；
+
+输出结果: 人脸属性结果；
+
 模型结构：RepVgg
 
 模型输出：[int, int, int], 依次表示人脸是否被遮挡的三个属性;
@@ -120,26 +125,6 @@ ret = release_retinanet_model(&rknn_app_ctx);  //释放
 include "outer_model/model_func.hpp"
 include "outer_model/model_params.hpp"
 
-rknn_app_context_t rknn_app_ctx;
-memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-const char* model_path = "model/FaceAttr.rknn";
-ret = init_classify_model(model_path, &rknn_app_ctx); //初始化
-face_attr_cls_object result = inference_face_attr_model(&rknn_app_ctx, input_data, true); //推理
-ret = release_classify_model(&rknn_app_ctx); // 释放
-```
-
-### 2.3. 业务逻辑
-
-#### 2.3.1. 可疑人员检测
-模型组合：头部检测 + 人脸属性；输入为场景大图，先经过头部检测模型，再将检测到的小图经过人脸属性模型推理，得到人脸属性结果；
-
-输出结果: 头部box和对应的人脸属性结果；
-
-调用方法：
-```
-include "outer_model/model_func.hpp"
-include "outer_model/model_params.hpp"
-
 // 检测初始化
 const char* det_model_path = "model/HeaderDet.rknn";
 rknn_app_context_t det_rknn_app_ctx;
@@ -150,9 +135,17 @@ rknn_app_context_t cls_rknn_app_ctx;
 memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
 const char* cls_model_path = "model/FaceAttr.rknn";
 ret = init_classify_model(cls_model_path, &cls_rknn_app_ctx);
-
-face_det_attr_result result = inference_face_det_attr_model(&det_rknn_app_ctx, &cls_rknn_app_ctx, input_data, true); //推理
-
+ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
+det_result.count = det_result.count;
+for (int i = 0; i < det_result.count; ++i) {
+    box_rect header_box;  // header的box
+    header_box.left = std::max(det_result.object[i].box.left, 0);
+    header_box.top = std::max(det_result.object[i].box.top, 0);
+    header_box.right = std::min(det_result.object[i].box.right, width);
+    header_box.bottom = std::min(det_result.object[i].box.bottom, height);
+    // 人脸属性模型
+    face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
+}
 ret = release_retinanet_model(&det_rknn_app_ctx);  //释放
 ret = release_classify_model(&cls_rknn_app_ctx);
 ```

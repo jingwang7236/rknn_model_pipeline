@@ -11,5 +11,7 @@ int inference_retinaface_model(rknn_app_context_t *app_ctx, image_buffer_t *img,
 
 int inference_classify_model(rknn_app_context_t *app_ctx, cv::Mat src_img, rknn_output* outputs);
 
+int quick_sort_indice_inverse(float *input, int left, int right, int *indices);
+int nms(int validCount, float *outputLocations, int order[], float threshold, int width, int height);
 
 #endif // MY_MODEL_H

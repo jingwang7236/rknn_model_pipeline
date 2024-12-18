@@ -74,17 +74,6 @@ typedef struct face_attr_cls_object {
     int cls_output[FACE_ATTR_NUM_CLASS];
 } face_attr_cls_object;  // 人脸属性输出结果
 
-typedef struct face_det_attr_object {      
-    box_rect box;  
-    float score;  // box's score
-    face_attr_cls_object face_attr_output;
-} face_det_attr_object;  // 单张头肩检测结果+人脸属性输出结果
-
-typedef struct face_det_attr_result{
-    int count;
-    face_det_attr_object object[OBJ_MAX_NUM];
-} face_det_attr_result;  // 场景中所有头肩检测+人脸属性结果
-
 
 // yolov10 det model
 

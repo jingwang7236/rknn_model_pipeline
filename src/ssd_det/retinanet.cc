@@ -40,7 +40,7 @@ static float CalculateOverlap(float xmin0, float ymin0, float xmax0, float ymax0
     return u <= 0.f ? 0.f : (i / u);
 }
 
-static int nms(int validCount, float *outputLocations, int order[], float threshold, int width, int height) {
+int nms(int validCount, float *outputLocations, int order[], float threshold, int width, int height) {
     for (int i = 0; i < validCount; ++i) {
         if (order[i] == -1) {
             continue;
@@ -71,7 +71,7 @@ static int nms(int validCount, float *outputLocations, int order[], float thresh
     return 0;
 }
 
-static int quick_sort_indice_inverse(float *input, int left, int right, int *indices) {
+int quick_sort_indice_inverse(float *input, int left, int right, int *indices) {
     float key;
     int key_index;
     int low = left;

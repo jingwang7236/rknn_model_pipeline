@@ -96,24 +96,8 @@ int main(int argc, char **argv) {
         {
             printf("release_yolov10_model fail! ret=%d\n", ret);
         }
-    }else if (std::string(model_name) == "face_attr"){
-        rknn_app_context_t rknn_app_ctx;
-        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "model/FaceAttr.rknn";
-        ret = init_classify_model(model_path, &rknn_app_ctx);
-        if (ret != 0)
-        {
-            printf("init_classify_model fail! ret=%d model_path=%s\n", ret, model_path);
-            return -1;
-        }
-        face_attr_cls_object result = inference_face_attr_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_classify_model(&rknn_app_ctx);
-        if (ret != 0)
-        {
-            printf("release_classify_model fail! ret=%d\n", ret);
-        }
     }
-    else if (std::string(model_name) == "face_det_attr"){
+    else if (std::string(model_name) == "face_attr"){
         // 检测初始化
         const char* det_model_path = "model/HeaderDet.rknn";
         rknn_app_context_t det_rknn_app_ctx;
@@ -124,9 +108,17 @@ int main(int argc, char **argv) {
         memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         const char* cls_model_path = "model/FaceAttr.rknn";
         ret = init_classify_model(cls_model_path, &cls_rknn_app_ctx);
-
-        face_det_attr_result result = inference_face_det_attr_model(&det_rknn_app_ctx, &cls_rknn_app_ctx, input_data, true); //推理
-        
+        ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
+        det_result.count = det_result.count;
+        for (int i = 0; i < det_result.count; ++i) {
+            box_rect header_box;  // header的box
+            header_box.left = std::max(det_result.object[i].box.left, 0);
+            header_box.top = std::max(det_result.object[i].box.top, 0);
+            header_box.right = std::min(det_result.object[i].box.right, width);
+            header_box.bottom = std::min(det_result.object[i].box.bottom, height);
+            // 人脸属性模型
+            face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
+        }
         ret = release_retinanet_model(&det_rknn_app_ctx);  //释放
         ret = release_classify_model(&cls_rknn_app_ctx);
     }

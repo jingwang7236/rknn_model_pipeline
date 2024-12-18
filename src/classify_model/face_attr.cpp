@@ -7,6 +7,7 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
 
+#include "outer_model/model_params.hpp"
 #include "outer_model/model_func.hpp"
 #include "inter_model/retinanet.hpp"
 
@@ -14,10 +15,10 @@
                   Functions
 -------------------------------------------*/
 
-face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
+face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger=false)
 {
     face_attr_cls_object result;
-    unsigned char* data = input_data.data;
+    unsigned char* data = input_data.data; // scene image
     int width = input_data.width;
     int height = input_data.height;
     int channel = input_data.channel;
@@ -32,6 +33,8 @@ face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_
     // orig_img的通道顺序为cv图片的默认顺序bgr
     cv::Mat orig_img;
     cv::cvtColor(cv_img, orig_img, cv::COLOR_RGB2BGR); 
+    // header crop img
+    cv::Mat header_crop_img = orig_img(cv::Rect(header_box.left, header_box.top, header_box.right - header_box.left, header_box.bottom - header_box.top));
 
     rknn_context ctx = 0;
     int            ret;
@@ -43,8 +46,7 @@ face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_
         printf("malloc outputs fail!\n");
         return result;
     }
-    // ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
-    ret = inference_classify_model(app_ctx, orig_img, outputs);
+    ret = inference_classify_model(app_ctx, header_crop_img, outputs);
     if (ret != 0) {
         printf("init_retinaface_model fail! ret=%d\n", ret);
         return result;
