@@ -25,7 +25,6 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
     // int            model_len = 0;
     // unsigned char* model;
     ssd_det_result result;
-    // det_model_result ret_result;
 
     const int num_class = 7;
     float det_threshold = 0.2;
