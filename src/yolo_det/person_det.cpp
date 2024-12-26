@@ -73,7 +73,7 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
     }
 
     // 画框
-    bool draw_box = true;
+    bool draw_box = false;
     char text[256];
     int count=0;
     for (int i = 0; i < od_results.count; i++)
