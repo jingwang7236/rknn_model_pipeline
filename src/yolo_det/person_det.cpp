@@ -21,7 +21,7 @@
 
 object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
-    object_detect_result_list od_results;
+    object_detect_result_list result;
     // const char* model_path = "model/yolov10s.rknn";
     // const char *image_path = argv[2];
 
@@ -37,7 +37,7 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
     src_image.virt_addr = (unsigned char *)malloc(src_image.size);
     if (src_image.virt_addr == NULL) {
       printf("malloc buffer size:%d fail!\n", src_image.size);
-      return od_results;
+      return result;
     }
     memcpy(src_image.virt_addr, input_data.data, src_image.size);
     
@@ -64,19 +64,18 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
     //     goto out;
     // }
 
-    // object_detect_result_list od_results;
-
+    object_detect_result_list od_results;
     ret = inference_yolov10_model(app_ctx, &src_image, &od_results);
     if (ret != 0)
     {
         printf("init_yolov10_model fail! ret=%d\n", ret);
-        return od_results;
+        return result;
     }
 
     // 画框
     bool draw_box = false;
     char text[256];
-    int count;
+    int count=0;
     for (int i = 0; i < od_results.count; i++)
     {
         object_detect_result *det_result = &(od_results.results[i]);
@@ -86,11 +85,14 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
             continue;
         }
         count++;
+        result.results[i] = *det_result;
+        result.count = count;
         if (enable_logger){
             printf("%s @ (%d %d %d %d) %.3f\n", coco_cls_to_name(det_result->cls_id),
             det_result->box.left, det_result->box.top,
             det_result->box.right, det_result->box.bottom,
             det_result->prop);
+
         }
 
         int x1 = det_result->box.left;
@@ -109,8 +111,9 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
         write_image(image_path, &src_image);
         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
     }
-    od_results.count = count;
-
+    if (enable_logger){
+        printf("Total person num: %d\n", result.count);
+    }
     deinit_post_process();
 
     // ret = release_yolov10_model(&rknn_app_ctx);
@@ -124,5 +127,5 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
         free(src_image.virt_addr);
 
     }
-    return od_results;
+    return result;
 }
