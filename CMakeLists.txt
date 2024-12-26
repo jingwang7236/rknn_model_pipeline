@@ -81,6 +81,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_params.hpp D
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_func.hpp DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/utils/common.h DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image.h DESTINATION ./include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image_resize2.h DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h DESTINATION ./include)
 
 # 设置调试标志

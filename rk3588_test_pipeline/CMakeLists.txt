@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(test)
+project(main)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -31,27 +31,23 @@ else()
   set(LIB_ARCH armhf)
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include/stb_image)
 include_directories(${CMAKE_SOURCE_DIR}/include/outer_model)
+include_directories(${CMAKE_SOURCE_DIR}/include/utils)
+# include_directories(${CMAKE_SOURCE_DIR}/rk3588_test_pipeline/include)
 
-find_package(OpenCV REQUIRED)
-# message("OpenCV_DIR: ${OpenCV_DIR}")
-message("OpenCV_LIBS:${OpenCV_LIBS}")
+# 添加静态库目标
+add_subdirectory(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
 # 添加一个可执行文件目标，包括main.cpp和选定的retinaface实现文件
 add_executable(${PROJECT_NAME}
     main.cpp
 )
-set(RGA_LIB ${CMAKE_SOURCE_DIR}/lib/librga.so)
-set(jpeg_turbo ${CMAKE_SOURCE_DIR}/lib/libturbojpeg.a)
-set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/lib/librknnrt.so)
-set(rknn_model_pipeline ${CMAKE_SOURCE_DIR}/lib/librknn_model_pipeline.a)
+
 target_link_libraries(${PROJECT_NAME}
-    ${rknn_model_pipeline}
-    ${OpenCV_LIBS}
-    ${RKNN_RT_LIB}
-    ${jpeg_turbo}
-    ${RGA_LIB}
+    rknn_model_pipeline
 )
 
 # 如果系统是Linux，设置使用pthread，链接Threads库
@@ -68,9 +64,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 # 安装目标可执行文件到当前目录下
+install(TARGETS rknn_model_pipeline ARCHIVE DESTINATION lib)
 install(TARGETS ${PROJECT_NAME} DESTINATION ./)
 # 安装测试图片到model目录下
-# install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ./data)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/test.png DESTINATION ./data)
 # 模型文件拷贝到model目录下
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/RetinaFace.rknn DESTINATION ./model)
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/FaceAttr.rknn DESTINATION ./model)
@@ -80,8 +77,11 @@ install(TARGETS ${PROJECT_NAME} DESTINATION ./)
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/HeaderDet.rknn DESTINATION ./model)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/rec_ren_1225_resnet18.rknn DESTINATION ./model)
 # 头文件拷贝到include目录下
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model DESTINATION ./include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_params.hpp DESTINATION ./include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_func.hpp DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/utils/common.h DESTINATION ./include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image.h DESTINATION ./include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image_resize2.h DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h DESTINATION ./include)
 
 # 设置调试标志
