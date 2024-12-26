@@ -73,7 +73,7 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
     }
 
     // 画框
-    bool draw_box = false;
+    bool draw_box = true;
     char text[256];
     int count=0;
     for (int i = 0; i < od_results.count; i++)
@@ -84,8 +84,8 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
         {
             continue;
         }
+        result.results[count] = *det_result;
         count++;
-        result.results[i] = *det_result;
         result.count = count;
         if (enable_logger){
             printf("%s @ (%d %d %d %d) %.3f\n", coco_cls_to_name(det_result->cls_id),
