@@ -22,6 +22,7 @@
 object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
     object_detect_result_list result;
+    result.count = 0;
     // const char* model_path = "model/yolov10s.rknn";
     // const char *image_path = argv[2];
 
@@ -86,7 +87,6 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
         }
         result.results[count] = *det_result;
         count++;
-        result.count = count;
         if (enable_logger){
             printf("%s @ (%d %d %d %d) %.3f\n", coco_cls_to_name(det_result->cls_id),
             det_result->box.left, det_result->box.top,
@@ -111,6 +111,7 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
         write_image(image_path, &src_image);
         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
     }
+    result.count = count;
     if (enable_logger){
         printf("Total person num: %d\n", result.count);
     }
