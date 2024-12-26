@@ -2,10 +2,8 @@
 #include <iostream>
 #include <string.h>
 
-#include "outer_model/model_func.hpp"
-#include "outer_model/model_params.hpp"
-// #include "model_func.hpp"
-// #include "model_params.hpp"
+#include "model_func.hpp"
+#include "model_params.hpp"
 // #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 /*-------------------------------------------
