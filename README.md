@@ -12,146 +12,7 @@ make -j16
 make install  # 可以将相关文件拷贝到目标目录
 ```
 
-## 2. 算法库使用说明
-
-测试用例在rk3588_test_pipeline目录下，包含以下算法：
-
-### 2.1. 目标检测
-包含行人检测、人脸检测、头部检测、手机检测;
-
-#### 2.1.1. 行人检测
-模型结构：[yolov10](https://github.com/THU-MIG/yolov10)
-
-
-调用方法：
-```
-include "outer_model/model_func.hpp"
-include "outer_model/model_params.hpp"
-
-det_model_input input_data;  // 输入数据格式
-input_data.data = data;   // rgb24格式
-input_data.width = width;
-input_data.height = height;
-input_data.channel = channel;
-rknn_app_context_t rknn_app_ctx;
-memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-const char* model_path = "model/yolov10s.rknn";
-ret = init_yolov10_model(model_path, &rknn_app_ctx);  // 初始化模型
-object_detect_result_list result = inference_person_det_model(&rknn_app_ctx, input_data, true); //模型推理
-ret = release_yolov10_model(&rknn_app_ctx); // 释放模型资源
-```
-
-#### 2.1.2. 人脸检测
-
-模型结构：[RetinaFace](https://github.com/airockchip/rknn_model_zoo/tree/main/examples/RetinaFace)
-
-链接：
-
-
-调用方法：
-```
-include "outer_model/model_func.hpp"
-include "outer_model/model_params.hpp"
-
-const char* model_path = "model/RetinaFace.rknn";
-rknn_app_context_t rknn_app_ctx;
-memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-ret = init_retinaface_model(model_path, &rknn_app_ctx);  // 初始化
-retinaface_result result = inference_face_det_model(&rknn_app_ctx, input_data, true); //推理
-ret = release_retinaface_model(&rknn_app_ctx);  //释放
-```
-
-#### 2.1.3. 头肩检测
-
-模型结构：Retinanet, RepVgg
-
-模型输出：头部的box
-
-调用方法：
-```
-include "outer_model/model_func.hpp"
-include "outer_model/model_params.hpp"
-
-const char* model_path = "model/HeaderDet.rknn";
-rknn_app_context_t rknn_app_ctx;
-memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-ret = init_retinanet_model(model_path, &rknn_app_ctx);  // 初始化
-ssd_det_result result = inference_header_det_model(&rknn_app_ctx, input_data, true); //推理
-ret = release_retinanet_model(&rknn_app_ctx);  //释放
-```
-
-#### 2.1.4. 手机检测
-
-模型结构：Retinanet, RepVgg
-
-模型输出：亮屏手机的box
-
-调用方法：
-```
-include "outer_model/model_func.hpp"
-include "outer_model/model_params.hpp"
-
-const char* model_path = "model/PhoneDet.rknn";
-rknn_app_context_t rknn_app_ctx;
-memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-ret = init_retinanet_model(model_path, &rknn_app_ctx);  // 初始化
-ssd_det_result result = inference_phone_det_model(&rknn_app_ctx, input_data, true); //推理
-ret = release_retinanet_model(&rknn_app_ctx);  //释放
-```
-
-
-### 2.2. 分类
-包含人脸属性；
-
-#### 2.2.1. 人脸属性/可疑人员
-
-模型组合：头部检测 + 人脸属性；输入为场景大图，先经过头部检测模型，再将检测到的小图经过人脸属性模型推理，得到人脸属性结果；
-
-输出结果: 人脸属性结果；
-
-模型结构：RepVgg
-
-模型输出：[int, int, int], 依次表示人脸是否被遮挡的三个属性;
-
-（1）是否带帽子或头盔（0-什么都不带、1-带帽子、2-戴头盔）;
-
-（2）是否带墨镜（0-不带墨镜、1-带墨镜）;
-
-（3）是否戴口罩（0-不带口罩、1-戴口罩）；
-
-
-调用方法：
-```
-include "outer_model/model_func.hpp"
-include "outer_model/model_params.hpp"
-
-// 检测初始化
-const char* det_model_path = "model/HeaderDet.rknn";
-rknn_app_context_t det_rknn_app_ctx;
-memset(&det_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-ret = init_retinanet_model(det_model_path, &det_rknn_app_ctx);  
-// 分类初始化
-rknn_app_context_t cls_rknn_app_ctx;
-memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-const char* cls_model_path = "model/FaceAttr.rknn";
-ret = init_classify_model(cls_model_path, &cls_rknn_app_ctx);
-ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
-det_result.count = det_result.count;
-for (int i = 0; i < det_result.count; ++i) {
-    box_rect header_box;  // header的box
-    header_box.left = std::max(det_result.object[i].box.left, 0);
-    header_box.top = std::max(det_result.object[i].box.top, 0);
-    header_box.right = std::min(det_result.object[i].box.right, width);
-    header_box.bottom = std::min(det_result.object[i].box.bottom, height);
-    // 人脸属性模型
-    face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
-}
-ret = release_retinanet_model(&det_rknn_app_ctx);  //释放
-ret = release_classify_model(&cls_rknn_app_ctx);
-```
-
-
-## 4. 项目结构说明
+## 2. 项目结构说明
 
 需要提供给外部使用的函数接口：初始化模型、模型资源释放、模型推理；
 
@@ -177,3 +38,12 @@ rknn_model_pipeline/
     └── ...  # 测试用例文件
 ```
 
+## 3. 算法库使用说明
+
+
+[算法库函数使用说明](https://github.com/jingwang7236/rknn_model_pipeline/tree/dev/doc/算法库函数使用说明.md)
+
+
+## 4. 业务逻辑介绍
+
+[业务逻辑介绍](https://github.com/jingwang7236/rknn_model_pipeline/tree/dev/doc/业务逻辑介绍.md)

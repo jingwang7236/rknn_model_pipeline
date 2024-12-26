@@ -30,11 +30,6 @@ typedef struct ssd_det_result{
     det_object_t object[OBJ_MAX_NUM];
 } ssd_det_result;
 
-//算法的输出结果
-typedef struct det_model_result{
-    int error_code;
-    ssd_det_result det_result;
-} det_model_result;
 
 //算法输入数据格式
 typedef struct det_model_input{

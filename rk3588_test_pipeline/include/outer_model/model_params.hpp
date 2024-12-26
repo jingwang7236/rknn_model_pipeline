@@ -75,6 +75,7 @@ typedef struct face_attr_cls_object {
 } face_attr_cls_object;  // 人脸属性输出结果
 
 
+
 // yolov10 det model
 
 #define OBJ_NAME_MAX_SIZE 64

@@ -85,5 +85,9 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image_resize2.h 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h DESTINATION ./include)
 
 # 设置调试标志
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -o0")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -o0")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -o0")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g -o0")
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -g -o0")
 set(CMAKE_BUILD_TYPE Debug)

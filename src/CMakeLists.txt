@@ -28,9 +28,8 @@ file(GLOB_RECURSE SOURCE
     ${CMAKE_SOURCE_DIR}/src/ssd_det/*.c*
     ${CMAKE_SOURCE_DIR}/src/yolo_det/*.c*
     ${CMAKE_SOURCE_DIR}/src/classify_model/*.c*
-    ${CMAKE_SOURCE_DIR}/src/business_pipeline/*.c*
+    ${CMAKE_SOURCE_DIR}/src/business_pipeline/*.c*  # 业务逻辑
     ${CMAKE_SOURCE_DIR}/src/utils/*.c
-    ${CMAKE_SOURCE_DIR}/src/resnet18/*.c*
     )
 message("HEADER: ${HEADER}")
 message("SOURCE: ${SOURCE}")
@@ -92,3 +91,10 @@ target_link_libraries(
     ${EXTRA_LIBS}
 )
 
+# 设置调试标志，增加编译器-g选项以包含调试信息
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -o0")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -o0")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -o0")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g -o0")
+set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -g -o0")
+set(CMAKE_BUILD_TYPE Debug)

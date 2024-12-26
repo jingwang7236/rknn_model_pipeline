@@ -24,7 +24,6 @@ ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model
     // int            model_len = 0;
     // unsigned char* model;
     ssd_det_result result;
-    // det_model_result ret_result;
 
     const int num_class = 1;
     float det_threshold = 0.5;
