@@ -37,13 +37,13 @@ int main(int argc, char **argv) {
         const char* model_path = "model/HeaderDet.rknn";
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_retinanet_model(model_path, &rknn_app_ctx);  // 初始化
+        ret = init_model(model_path, &rknn_app_ctx);  // 初始化
         if (ret != 0) {
             printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
         ssd_det_result result = inference_header_det_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_retinanet_model(&rknn_app_ctx);  //释放
+        ret = release_model(&rknn_app_ctx);  //释放
         if (ret != 0) {
             printf("release_retinanet_model fail! ret=%d\n", ret);
             return -1;
@@ -52,13 +52,13 @@ int main(int argc, char **argv) {
         const char* model_path = "model/PhoneDet.rknn";
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_retinanet_model(model_path, &rknn_app_ctx);  // 初始化
+        ret = init_model(model_path, &rknn_app_ctx);  // 初始化
         if (ret != 0) {
             printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
         ssd_det_result result = inference_phone_det_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_retinanet_model(&rknn_app_ctx);  //释放
+        ret = release_model(&rknn_app_ctx);  //释放
         if (ret != 0) {
             printf("release_retinanet_model fail! ret=%d\n", ret);
             return -1;
@@ -67,13 +67,13 @@ int main(int argc, char **argv) {
         const char* model_path = "model/RetinaFace.rknn";
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_retinaface_model(model_path, &rknn_app_ctx);  // 初始化
+        ret = init_model(model_path, &rknn_app_ctx);  // 初始化
         if (ret != 0) {
             printf("init_retinaface_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
         retinaface_result result = inference_face_det_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_retinaface_model(&rknn_app_ctx);
+        ret = release_model(&rknn_app_ctx);
         if (ret != 0) {
             printf("release_retinaface_model fail! ret=%d\n", ret);
             return -1;
@@ -82,14 +82,14 @@ int main(int argc, char **argv) {
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         const char* model_path = "model/yolov10s.rknn";
-        ret = init_yolov10_model(model_path, &rknn_app_ctx);
+        ret = init_model(model_path, &rknn_app_ctx);
         if (ret != 0)
         {
             printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
         object_detect_result_list result = inference_person_det_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_yolov10_model(&rknn_app_ctx);
+        ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
             printf("release_yolov10_model fail! ret=%d\n", ret);
@@ -100,12 +100,12 @@ int main(int argc, char **argv) {
         const char* det_model_path = "model/HeaderDet.rknn";
         rknn_app_context_t det_rknn_app_ctx;
         memset(&det_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_retinanet_model(det_model_path, &det_rknn_app_ctx);  
+        ret = init_model(det_model_path, &det_rknn_app_ctx);  
         // 分类初始化
         rknn_app_context_t cls_rknn_app_ctx;
         memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         const char* cls_model_path = "model/FaceAttr.rknn";
-        ret = init_classify_model(cls_model_path, &cls_rknn_app_ctx);
+        ret = init_model(cls_model_path, &cls_rknn_app_ctx);
         ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
         det_result.count = det_result.count;
         for (int i = 0; i < det_result.count; ++i) {
@@ -117,8 +117,8 @@ int main(int argc, char **argv) {
             // 人脸属性模型
             face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
         }
-        ret = release_retinanet_model(&det_rknn_app_ctx);  //释放
-        ret = release_classify_model(&cls_rknn_app_ctx);
+        ret = release_model(&det_rknn_app_ctx);  //释放
+        ret = release_model(&cls_rknn_app_ctx);
     }
     else {
         std::cerr << "Unknown model_name: " << model_name << std::endl;
