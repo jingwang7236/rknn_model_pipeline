@@ -36,65 +36,6 @@ static float CalculateOverlap(float xmin0, float ymin0, float xmax0, float ymax0
     return u <= 0.f ? 0.f : (i / u);
 }
 
-// static int nms(int validCount, float *outputLocations, int order[], float threshold, int width, int height) {
-//     for (int i = 0; i < validCount; ++i) {
-//         if (order[i] == -1) {
-//             continue;
-//         }
-//         int n = order[i];
-//         for (int j = i + 1; j < validCount; ++j) {
-//             int m = order[j];
-//             if (m == -1) {
-//                 continue;
-//             }
-//             float xmin0 = outputLocations[n * 4 + 0] * width;
-//             float ymin0 = outputLocations[n * 4 + 1] * height;
-//             float xmax0 = outputLocations[n * 4 + 2] * width;
-//             float ymax0 = outputLocations[n * 4 + 3] * height;
-
-//             float xmin1 = outputLocations[m * 4 + 0] * width;
-//             float ymin1 = outputLocations[m * 4 + 1] * height;
-//             float xmax1 = outputLocations[m * 4 + 2] * width;
-//             float ymax1 = outputLocations[m * 4 + 3] * height;
-
-//             float iou = CalculateOverlap(xmin0, ymin0, xmax0, ymax0, xmin1, ymin1, xmax1, ymax1);
-
-//             if (iou > threshold) {
-//                 order[j] = -1;
-//             }
-//         }
-//     }
-//     return 0;
-// }
-
-// static int quick_sort_indice_inverse(float *input, int left, int right, int *indices) {
-//     float key;
-//     int key_index;
-//     int low = left;
-//     int high = right;
-//     if (left < right) {
-//         key_index = indices[left];
-//         key = input[left];
-//         while (low < high) {
-//             while (low < high && input[high] <= key) {
-//                 high--;
-//             }
-//             input[low] = input[high];
-//             indices[low] = indices[high];
-//             while (low < high && input[low] >= key) {
-//                 low++;
-//             }
-//             input[high] = input[low];
-//             indices[high] = indices[low];
-//         }
-//         input[low] = key;
-//         indices[low] = key_index;
-//         quick_sort_indice_inverse(input, left, low - 1, indices);
-//         quick_sort_indice_inverse(input, low + 1, right, indices);
-//     }
-//     return low;
-// }
-
 static int filterValidResult(float *scores, float *loc, float *landms, const float boxPriors[][4], int model_in_h, int model_in_w,
                              int filter_indice[], float *props, float threshold, const int num_results) {
     int validCount = 0;
