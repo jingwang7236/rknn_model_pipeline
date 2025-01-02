@@ -120,7 +120,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, image_buffer_t* img, obj
     }
 
     // Post Process
-    post_process(app_ctx, outputs, &letter_box, box_conf_threshold, nms_threshold, od_results);
+    post_process_det(app_ctx, outputs, &letter_box, box_conf_threshold, nms_threshold, od_results);
 
     // dump_tensor_attr(od_results);
 
