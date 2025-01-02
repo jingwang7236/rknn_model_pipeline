@@ -5,6 +5,7 @@
 // #include "rknn_api.h"
 // #include "common.h"
 #include "image_utils.h"
+#include "opencv2/opencv.hpp"
 #include "outer_model/model_params.hpp"
 
 /* 拷贝到outer_model/model_params.hpp文件, 外部调用
@@ -40,5 +41,6 @@ void deinitPostProcess();
 // int release_yolov10_model(rknn_app_context_t* app_ctx);
 
 int inference_yolov10_model(rknn_app_context_t* app_ctx, image_buffer_t* img, object_detect_result_list* od_results);
+int inference_yolov10_model_opencv(rknn_app_context_t *app_ctx, cv::Mat src_img, object_detect_result_list *od_results);
 
 #endif //_RKNN_DEMO_YOLOV10_H_
