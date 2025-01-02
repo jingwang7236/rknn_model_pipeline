@@ -29,7 +29,7 @@ file(GLOB_RECURSE SOURCE
     ${CMAKE_SOURCE_DIR}/src/yolo_det/*.c*
     ${CMAKE_SOURCE_DIR}/src/classify_model/*.c*
     ${CMAKE_SOURCE_DIR}/src/business_pipeline/*.c*  # 业务逻辑
-    ${CMAKE_SOURCE_DIR}/src/utils/*.c
+    ${CMAKE_SOURCE_DIR}/src/utils/*.c*
     ${CMAKE_SOURCE_DIR}/src/resnet18/*.c*
     )
 message("HEADER: ${HEADER}")
