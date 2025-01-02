@@ -10,13 +10,13 @@
                 Main  Functions
 -------------------------------------------*/
 int main(int argc, char **argv) {
-    if (argc != 3) {
+    /*if (argc != 3) {
         printf("%s <model_name> <image_path>\n", argv[0]);
         return -1;
-    }
+    }*/
     int ret;
-    const char *model_name = argv[1];
-    const char *image_path = argv[2];
+    const char *model_name = "det_knife";
+    const char *image_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/0.jpg";
     // Load image
     int width, height, channel;
     unsigned char* data = stbi_load(image_path, &width, &height, &channel, 3);
@@ -33,92 +33,112 @@ int main(int argc, char **argv) {
     input_data.channel = channel;
 
     // header det model
-    if (std::string(model_name) == "header_det"){
-        const char* model_path = "model/HeaderDet.rknn";
+    //if (std::string(model_name) == "header_det"){
+    //    const char* model_path = "model/HeaderDet.rknn";
+    //    rknn_app_context_t rknn_app_ctx;
+    //    memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    ret = init_model(model_path, &rknn_app_ctx);  // 初始化
+    //    if (ret != 0) {
+    //        printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
+    //        return -1;
+    //    }
+    //    ssd_det_result result = inference_header_det_model(&rknn_app_ctx, input_data, true); //推理
+    //    ret = release_model(&rknn_app_ctx);  //释放
+    //    if (ret != 0) {
+    //        printf("release_retinanet_model fail! ret=%d\n", ret);
+    //        return -1;
+    //    }
+    //}else if(std::string(model_name) == "phone_det"){
+    //    const char* model_path = "model/PhoneDet.rknn";
+    //    rknn_app_context_t rknn_app_ctx;
+    //    memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    ret = init_model(model_path, &rknn_app_ctx);  // 初始化
+    //    if (ret != 0) {
+    //        printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
+    //        return -1;
+    //    }
+    //    ssd_det_result result = inference_phone_det_model(&rknn_app_ctx, input_data, true); //推理
+    //    ret = release_model(&rknn_app_ctx);  //释放
+    //    if (ret != 0) {
+    //        printf("release_retinanet_model fail! ret=%d\n", ret);
+    //        return -1;
+    //    }
+    //}else if(std::string(model_name) == "face_det"){
+    //    const char* model_path = "model/RetinaFace.rknn";
+    //    rknn_app_context_t rknn_app_ctx;
+    //    memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    ret = init_model(model_path, &rknn_app_ctx);  // 初始化
+    //    if (ret != 0) {
+    //        printf("init_retinaface_model fail! ret=%d model_path=%s\n", ret, model_path);
+    //        return -1;
+    //    }
+    //    retinaface_result result = inference_face_det_model(&rknn_app_ctx, input_data, true); //推理
+    //    ret = release_model(&rknn_app_ctx);
+    //    if (ret != 0) {
+    //        printf("release_retinaface_model fail! ret=%d\n", ret);
+    //        return -1;
+    //}
+    //}else if (std::string(model_name) == "person_det"){
+    //    rknn_app_context_t rknn_app_ctx;
+    //    memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    const char* model_path = "model/yolov10s.rknn";
+    //    ret = init_model(model_path, &rknn_app_ctx);
+    //    if (ret != 0)
+    //    {
+    //        printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
+    //        return -1;
+    //    }
+    //    object_detect_result_list result = inference_person_det_model(&rknn_app_ctx, input_data, true); //推理
+    //    ret = release_model(&rknn_app_ctx);
+    //    if (ret != 0)
+    //    {
+    //        printf("release_yolov10_model fail! ret=%d\n", ret);
+    //    }
+    //}
+    //else if (std::string(model_name) == "face_attr"){
+    //    // 检测初始化
+    //    const char* det_model_path = "model/HeaderDet.rknn";
+    //    rknn_app_context_t det_rknn_app_ctx;
+    //    memset(&det_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    ret = init_model(det_model_path, &det_rknn_app_ctx);  
+    //    // 分类初始化
+    //    rknn_app_context_t cls_rknn_app_ctx;
+    //    memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    const char* cls_model_path = "model/FaceAttr.rknn";
+    //    ret = init_model(cls_model_path, &cls_rknn_app_ctx);
+    //    ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
+    //    det_result.count = det_result.count;
+    //    for (int i = 0; i < det_result.count; ++i) {
+    //        box_rect header_box;  // header的box
+    //        header_box.left = std::max(det_result.object[i].box.left, 0);
+    //        header_box.top = std::max(det_result.object[i].box.top, 0);
+    //        header_box.right = std::min(det_result.object[i].box.right, width);
+    //        header_box.bottom = std::min(det_result.object[i].box.bottom, height);
+    //        // 人脸属性模型
+    //        face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
+    //    }
+    //    ret = release_model(&det_rknn_app_ctx);  //释放
+    //    ret = release_model(&cls_rknn_app_ctx);
+    //}
+
+
+
+    if (std::string(model_name) == "det_knife") {
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_model(model_path, &rknn_app_ctx);  // 初始化
-        if (ret != 0) {
-            printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
-            return -1;
-        }
-        ssd_det_result result = inference_header_det_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_model(&rknn_app_ctx);  //释放
-        if (ret != 0) {
-            printf("release_retinanet_model fail! ret=%d\n", ret);
-            return -1;
-        }
-    }else if(std::string(model_name) == "phone_det"){
-        const char* model_path = "model/PhoneDet.rknn";
-        rknn_app_context_t rknn_app_ctx;
-        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_model(model_path, &rknn_app_ctx);  // 初始化
-        if (ret != 0) {
-            printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
-            return -1;
-        }
-        ssd_det_result result = inference_phone_det_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_model(&rknn_app_ctx);  //释放
-        if (ret != 0) {
-            printf("release_retinanet_model fail! ret=%d\n", ret);
-            return -1;
-        }
-    }else if(std::string(model_name) == "face_det"){
-        const char* model_path = "model/RetinaFace.rknn";
-        rknn_app_context_t rknn_app_ctx;
-        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_model(model_path, &rknn_app_ctx);  // 初始化
-        if (ret != 0) {
-            printf("init_retinaface_model fail! ret=%d model_path=%s\n", ret, model_path);
-            return -1;
-        }
-        retinaface_result result = inference_face_det_model(&rknn_app_ctx, input_data, true); //推理
-        ret = release_model(&rknn_app_ctx);
-        if (ret != 0) {
-            printf("release_retinaface_model fail! ret=%d\n", ret);
-            return -1;
-    }
-    }else if (std::string(model_name) == "person_det"){
-        rknn_app_context_t rknn_app_ctx;
-        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "model/yolov10s.rknn";
+        const char* model_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/yolov8n_1105_det_knife_i8.rknn";
         ret = init_model(model_path, &rknn_app_ctx);
         if (ret != 0)
         {
-            printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
+            printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-        object_detect_result_list result = inference_person_det_model(&rknn_app_ctx, input_data, true); //推理
+        object_detect_result_list result = inference_det_knife_model(&rknn_app_ctx, input_data, true); //推理
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
-            printf("release_yolov10_model fail! ret=%d\n", ret);
+            printf("release_yolov8_model fail! ret=%d\n", ret);
         }
-    }
-    else if (std::string(model_name) == "face_attr"){
-        // 检测初始化
-        const char* det_model_path = "model/HeaderDet.rknn";
-        rknn_app_context_t det_rknn_app_ctx;
-        memset(&det_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        ret = init_model(det_model_path, &det_rknn_app_ctx);  
-        // 分类初始化
-        rknn_app_context_t cls_rknn_app_ctx;
-        memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* cls_model_path = "model/FaceAttr.rknn";
-        ret = init_model(cls_model_path, &cls_rknn_app_ctx);
-        ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
-        det_result.count = det_result.count;
-        for (int i = 0; i < det_result.count; ++i) {
-            box_rect header_box;  // header的box
-            header_box.left = std::max(det_result.object[i].box.left, 0);
-            header_box.top = std::max(det_result.object[i].box.top, 0);
-            header_box.right = std::min(det_result.object[i].box.right, width);
-            header_box.bottom = std::min(det_result.object[i].box.bottom, height);
-            // 人脸属性模型
-            face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
-        }
-        ret = release_model(&det_rknn_app_ctx);  //释放
-        ret = release_model(&cls_rknn_app_ctx);
     }
     else {
         std::cerr << "Unknown model_name: " << model_name << std::endl;

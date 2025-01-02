@@ -18,7 +18,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--allow-shlib-undefine
 
 # install target and libraries
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/rk3588_test_pipeline)
-
+ 
 
 # 设置CMake安装时的RPATH（运行时库搜索路径）
 set(CMAKE_SKIP_INSTALL_RPATH FALSE)
@@ -31,9 +31,10 @@ else()
   set(LIB_ARCH armhf)
 endif()
 
+include_directories(${CMAKE_SOURCE_DIR}/include/utils)
 include_directories(${CMAKE_SOURCE_DIR}/include/stb_image)
 include_directories(${CMAKE_SOURCE_DIR}/include/outer_model)
-include_directories(${CMAKE_SOURCE_DIR}/include/utils)
+
 
 
 # 添加静态库目标
@@ -44,7 +45,7 @@ add_subdirectory(
 # 添加一个可执行文件目标，包括main.cpp和选定的retinaface实现文件
 add_executable(${PROJECT_NAME}
     main.cpp
-)
+ "include/utils/Float16.h")
 
 target_link_libraries(${PROJECT_NAME}
     rknn_model_pipeline

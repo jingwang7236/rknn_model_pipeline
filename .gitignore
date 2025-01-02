@@ -3,4 +3,8 @@ install
 data
 model
 .vscode
+.vs/
 
+/0.jpg
+/yolov8n_1105_det_knife_i8.rknn
+/class.txt

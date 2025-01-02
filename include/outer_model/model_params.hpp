@@ -1,6 +1,7 @@
 #ifndef _RKNN_DET_CLS_H_
 #define _RKNN_DET_CLS_H_
 
+#include "common.h"
 // #define MODEL_OK 0      // 模型推理成功
 // #define MODEL_ERR 1     // 模型推理失败
 // #define INPUT_ERR 2  // 模型输入参数错误
@@ -70,17 +71,18 @@ typedef struct face_attr_cls_object {
 } face_attr_cls_object;  // 人脸属性输出结果
 
 
-// yolov10 det model
+// yolo det model
 
 #define OBJ_NAME_MAX_SIZE 64
 #define OBJ_NUMB_MAX_SIZE 128
 #define OBJ_CLASS_NUM 80
 #define NMS_THRESH 0.45
 #define BOX_THRESH 0.25
+#define PROP_BOX_SIZE (5 + OBJ_CLASS_NUM)
 
 
 typedef struct {
-    box_rect box;
+    image_rect_t box;
     float prop;
     int cls_id;
 } object_detect_result;
@@ -90,5 +92,32 @@ typedef struct {
     int count;
     object_detect_result results[OBJ_NUMB_MAX_SIZE];
 } object_detect_result_list;
+
+typedef struct {
+    image_rect_t box;
+    float keypoints[17][3];//keypoints x,y,conf
+    float prop;
+    int cls_id;
+} object_detect_pose_result;
+
+typedef struct {
+    int id;
+    int count;
+    object_detect_pose_result results[OBJ_NUMB_MAX_SIZE];
+} object_detect_pose_result_list;
+
+
+typedef struct {
+    image_obb_box_t box;
+    float prop;
+    int cls_id;
+} object_detect_obb_result;
+
+typedef struct {
+    int id;
+    int count;
+    object_detect_obb_result results[OBJ_NUMB_MAX_SIZE];
+} object_detect_obb_result_list;
+
 
 #endif //_RKNN_DET_CLS_H_
