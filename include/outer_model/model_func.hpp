@@ -16,8 +16,6 @@ retinaface_result inference_face_det_model(rknn_app_context_t *app_ctx, det_mode
 face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger);
 
 object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
-int init_yolov10_model(const char* model_path, rknn_app_context_t* app_ctx);
-int release_yolov10_model(rknn_app_context_t* app_ctx);
 
 // resnet
 int init_resnet_model(const char* model_path, rknn_app_context_t* app_ctx);
