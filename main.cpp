@@ -207,6 +207,29 @@ int main(int argc, char **argv) {
           << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
+    else if(std::string(model_name) == "det_hand"){
+        rknn_app_context_t rknn_app_ctx;
+        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        const char* model_path = "model/det_hand_mix_up.rknn";
+        ret = init_model(model_path, &rknn_app_ctx);
+
+        if (ret != 0)
+        {
+            printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        rknn_app_ctx.is_quant = true;
+        print_rknn_app_context(rknn_app_ctx);
+        
+        object_detect_result_list result = inference_det_hand_model(&rknn_app_ctx, input_data, true); //推理
+        ret = release_model(&rknn_app_ctx);
+        
+        if (ret != 0)
+        {
+            printf("release_yolov8_model fail! ret=%d\n", ret);
+        }
+    }
     else {
         std::cerr << "Unknown model_name: " << model_name << std::endl;
         throw std::invalid_argument("Unknown model_name: " + std::string(model_name));
