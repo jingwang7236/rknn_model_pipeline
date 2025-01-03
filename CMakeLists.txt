@@ -18,7 +18,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--allow-shlib-undefine
 
 # install target and libraries
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/rk3588_test_pipeline)
-
+ 
 
 # 设置CMake安装时的RPATH（运行时库搜索路径）
 set(CMAKE_SKIP_INSTALL_RPATH FALSE)
@@ -31,10 +31,11 @@ else()
   set(LIB_ARCH armhf)
 endif()
 
+include_directories(${CMAKE_SOURCE_DIR}/include/utils)
 include_directories(${CMAKE_SOURCE_DIR}/include/stb_image)
 include_directories(${CMAKE_SOURCE_DIR}/include/outer_model)
-include_directories(${CMAKE_SOURCE_DIR}/include/utils)
 include_directories(${CMAKE_SOURCE_DIR}/include/ppocr)
+
 
 
 # 添加静态库目标
@@ -45,7 +46,7 @@ add_subdirectory(
 # 添加一个可执行文件目标，包括main.cpp和选定的retinaface实现文件
 add_executable(${PROJECT_NAME}
     main.cpp
-)
+ "include/utils/Float16.h")
 
 target_link_libraries(${PROJECT_NAME}
     rknn_model_pipeline
@@ -68,23 +69,24 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 install(TARGETS rknn_model_pipeline ARCHIVE DESTINATION lib)
 install(TARGETS ${PROJECT_NAME} DESTINATION ./)
 # 安装测试图片到model目录下
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/test.png DESTINATION ./data)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/test.png DESTINATION ./data)
 # 模型文件拷贝到model目录下
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/RetinaFace.rknn DESTINATION ./model)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/FaceAttr.rknn DESTINATION ./model)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/yolov10s.rknn DESTINATION ./model)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/coco_80_labels_list.txt DESTINATION ./model)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/PhoneDet.rknn DESTINATION ./model)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/HeaderDet.rknn DESTINATION ./model)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/RetinaFace.rknn DESTINATION ./model)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/FaceAttr.rknn DESTINATION ./model)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/yolov10s.rknn DESTINATION ./model)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/coco_80_labels_list.txt DESTINATION ./model)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/PhoneDet.rknn DESTINATION ./model)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/HeaderDet.rknn DESTINATION ./model)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/rec_ren_1225_resnet18.rknn DESTINATION ./model)
 # 头文件拷贝到include目录下
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_params.hpp DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_func.hpp DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/utils/common.h DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image.h DESTINATION ./include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image_resize2.h DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h DESTINATION ./include)
 
-
-# 设置调试标志，增加编译器-g选项以包含调试信息
+# 设置调试标志
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -o0")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -o0")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -o0")
