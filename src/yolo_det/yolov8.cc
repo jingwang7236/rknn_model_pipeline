@@ -24,6 +24,43 @@
 
 #include <sys/time.h>
 
+static int convert_image_with_letterbox_opencv(rknn_app_context_t *app_ctx, const cv::Mat& orig_img, cv::Mat& dist_img, letterbox_t *letter_box)
+{
+    // 获取原始图像的宽度和高度
+    int originalWidth = orig_img.cols;
+    int originalHeight = orig_img.rows;
+    // 获取目标图像的宽度和高度
+    int targetWidth = app_ctx->model_width;
+    int targetHeight =  app_ctx->model_height;
+    // 计算缩放比例
+    float widthScale = (float)targetWidth / originalWidth;
+    float heightScale = (float)targetHeight / originalHeight;
+    float scale = (widthScale < heightScale) ? widthScale : heightScale;
+
+    // 计算新的宽度和高度
+    int newWidth = (int)(originalWidth * scale);
+    int newHeight = (int)(originalHeight * scale);
+    
+    cv::Mat resize_img;
+    cv::resize(orig_img, resize_img, cv::Size(newWidth, newHeight));
+    // 计算需要填充的像素
+    int left_pad = (targetWidth - newWidth) / 2;  // 居中贴图
+    int right_pad = targetWidth - newWidth - left_pad;
+    int top_pad = (targetHeight - newHeight) / 2;
+    int bottom_pad = targetHeight - newHeight - top_pad;
+
+    // 填充图像
+    cv::copyMakeBorder(resize_img, dist_img, top_pad, bottom_pad, left_pad, right_pad, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    
+    cv::imwrite("input_scale.png", dist_img);
+
+    letter_box->scale = scale;
+    letter_box->x_pad = left_pad;
+    letter_box->y_pad = top_pad;
+    
+    return 0;
+}
+
 static inline int64_t getCurrentTimeUs()
 {
     struct timeval tv;

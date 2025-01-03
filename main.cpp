@@ -10,11 +10,6 @@
 
 void print_rknn_app_context(const rknn_app_context_t& ctx) {
     std::cout << "rknn_ctx: " << ctx.rknn_ctx << std::endl;
-   // std::cout << "io_num (input/output count): " << ctx.io_num.input_num << ", " << ctx.io_num.output_num << std::endl;
-
-    std::cout << "input_attrs: " << ctx.input_attrs << std::endl;
-    std::cout << "output_attrs: " << ctx.output_attrs << std::endl;
-
     std::cout << "model_channel: " << ctx.model_channel << std::endl;
     std::cout << "model_width: " << ctx.model_width << std::endl;
     std::cout << "model_height: " << ctx.model_height << std::endl;
