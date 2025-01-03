@@ -1,0 +1,85 @@
+cmake_minimum_required(VERSION 3.8)
+
+project(algorithms)
+
+# 设置 C++ 标准
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_BUILD_TYPE Debug) # None, Debug, Release, RelWithDebInfo, MinSizeRel
+
+# 安装路径
+# set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/rk3588_test_pipeline)
+
+# 查找 OpenCV
+find_package(OpenCV REQUIRED)
+find_package(Threads REQUIRED)
+ 
+function(add_sources_recursively dir sources_var)
+    message(STATUS "Searching in directory: ${dir}")
+    # 使用相对路径查找所有的 .cpp, .cc 和 .c 文件
+    file(GLOB_RECURSE TMP_SOURCES RELATIVE ${CMAKE_SOURCE_DIR} "${dir}/*.cpp" "${dir}/*.cc" "${dir}/*.c")
+    message(STATUS "Found files: ${TMP_SOURCES}")
+    set(${sources_var} ${TMP_SOURCES} PARENT_SCOPE)
+endfunction()
+
+
+
+
+# 设置头文件目录并保存到 INCLUDE_DIRS 变量中
+set(INCLUDE_DIRS
+    ${CMAKE_SOURCE_DIR}/include
+    # 后续头文件新增地址
+    ${CMAKE_SOURCE_DIR}/third_party/allocator/dma
+    ${CMAKE_SOURCE_DIR}/third_party/allocator/drm
+    ${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/include
+    ${CMAKE_SOURCE_DIR}/third_party/librga/include
+    ${CMAKE_SOURCE_DIR}/third_party/opencl/libopencl-stub/include
+    ${CMAKE_SOURCE_DIR}/third_party/rknpu2/include
+)
+
+# 应用头文件目录
+include_directories(${INCLUDE_DIRS})
+
+# 输出加载的头文件目录
+message(STATUS "Included directories: ${INCLUDE_DIRS}")
+
+# 静态和共享库依赖
+set(JPEG_TURBO_LIBS "${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/Linux/aarch64/libturbojpeg.a")
+set(RGA_LIBS "${CMAKE_SOURCE_DIR}/third_party/librga/Linux/aarch64/librga.a")
+set(RKNN_LIBS "${CMAKE_SOURCE_DIR}/third_party/rknpu2/Linux/aarch64/librknnrt.so")
+
+# 源文件递归查找
+add_sources_recursively(${CMAKE_SOURCE_DIR}/src SOURCES)
+
+# 打印加载的源文件
+message(STATUS "Loaded source files:")
+foreach(file ${SOURCES})
+    message(STATUS "  ${file}")
+endforeach()
+
+# 添加可执行目标
+add_executable(algo_exec "main.cpp" ${SOURCES})
+target_link_libraries(algo_exec PRIVATE  ${JPEG_TURBO_LIBS}
+    ${RGA_LIBS}
+    ${RKNN_LIBS}
+    ${OpenCV_LIBS}
+    pthread
+   ) 
+
+# 设置目标的 C++ 标准
+set_property(TARGET algo_exec PROPERTY CXX_STANDARD 20)
+
+# 安装目标
+install(TARGETS algo_exec
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+# 可选安装模型与测试文件
+option(INSTALL_MODELS "Install model and test files" ON)
+if(INSTALL_MODELS)
+    install(FILES ${CMAKE_SOURCE_DIR}/data/test.png DESTINATION ./data)
+    install(FILES ${CMAKE_SOURCE_DIR}/model/*.rknn DESTINATION ./model)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION ./include)
+endif()

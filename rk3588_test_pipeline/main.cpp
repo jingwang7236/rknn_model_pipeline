@@ -117,8 +117,26 @@ int main(int argc, char **argv) {
             // 人脸属性模型
             face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
         }
-        ret = release_model(&det_rknn_app_ctx);  //释放
-        ret = release_model(&cls_rknn_app_ctx);
+        ret = release_retinanet_model(&det_rknn_app_ctx);  //释放
+        ret = release_classify_model(&cls_rknn_app_ctx);
+    }else if(std::string(model_name) == "rec_ren"){
+        // 分类初始化
+        const char* model_path = "model/rec_ren_1225_resnet18.rknn";
+        rknn_app_context_t rec_rknn_app_ctx;
+        memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        ret = init_resnet_model(model_path, &rec_rknn_app_ctx);  
+        
+        if (ret != 0)
+        {
+            printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        resnet_result rec_result = inference_rec_person_resnet18_model(&rec_rknn_app_ctx, input_data, true);
+        std::cout << "Class index: " << rec_result.cls
+          << ", Score: " << rec_result.score
+          << std::endl;
+        ret = release_resnet_model(&rec_rknn_app_ctx);
     }
     else {
         std::cerr << "Unknown model_name: " << model_name << std::endl;
