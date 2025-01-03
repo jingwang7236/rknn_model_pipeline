@@ -17,6 +17,8 @@ face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_
 
 object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
+object_detect_result_list inference_det_knife_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger);
+
 // resnet
 resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
