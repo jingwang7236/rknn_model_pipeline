@@ -6,6 +6,21 @@
 #include "model_params.hpp"
 // #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+
+void print_rknn_app_context(const rknn_app_context_t& ctx) {
+    std::cout << "rknn_ctx: " << ctx.rknn_ctx << std::endl;
+   // std::cout << "io_num (input/output count): " << ctx.io_num.input_num << ", " << ctx.io_num.output_num << std::endl;
+
+    std::cout << "input_attrs: " << ctx.input_attrs << std::endl;
+    std::cout << "output_attrs: " << ctx.output_attrs << std::endl;
+
+    std::cout << "model_channel: " << ctx.model_channel << std::endl;
+    std::cout << "model_width: " << ctx.model_width << std::endl;
+    std::cout << "model_height: " << ctx.model_height << std::endl;
+    std::cout << "is_quant: " << (ctx.is_quant ? "true" : "false") << std::endl;
+}
+
 /*-------------------------------------------
                 Main  Functions
 -------------------------------------------*/
@@ -126,13 +141,20 @@ int main(int argc, char **argv) {
     if (std::string(model_name) == "det_knife") {
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/yolov8n_1105_det_knife_i8.rknn";
+        const char* model_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/yolov8n.rknn";
         ret = init_model(model_path, &rknn_app_ctx);
         if (ret != 0)
         {
             printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
+
+
+        rknn_app_ctx.is_quant = true;
+
+        print_rknn_app_context(rknn_app_ctx);
+        
+
         object_detect_result_list result = inference_det_knife_model(&rknn_app_ctx, input_data, true); //推理
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)

@@ -15,7 +15,7 @@ int init_post_process(const char* label_txt_path);
 void deinit_post_process();
 char *coco_cls_to_name(int cls_id);
 char* coco_cls_to_name(int cls_id, int obj_class_num);
-int post_process(rknn_app_context_t *app_ctx, void *outputs, letterbox_t *letter_box, float conf_threshold, float nms_threshold, object_detect_result_list *od_results);
+int post_process_det(rknn_app_context_t *app_ctx, void *outputs, letterbox_t *letter_box, float conf_threshold, float nms_threshold, object_detect_result_list *od_results);
 int post_process_obb(rknn_app_context_t* app_ctx, void* outputs, letterbox_t* letter_box, float conf_threshold, float nms_threshold, object_detect_obb_result_list* od_results);
 int post_process_pose(rknn_app_context_t* app_ctx, void* outputs, letterbox_t* letter_box, float conf_threshold, float nms_threshold, object_detect_pose_result_list* od_results);
 
