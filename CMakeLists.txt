@@ -34,6 +34,7 @@ endif()
 include_directories(${CMAKE_SOURCE_DIR}/include/utils)
 include_directories(${CMAKE_SOURCE_DIR}/include/stb_image)
 include_directories(${CMAKE_SOURCE_DIR}/include/outer_model)
+include_directories(${CMAKE_SOURCE_DIR}/include/ppocr)
 
 
 

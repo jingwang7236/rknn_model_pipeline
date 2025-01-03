@@ -187,6 +187,17 @@ int main(int argc, char **argv) {
         }
         ret = release_model(&det_rknn_app_ctx);  //释放
         ret = release_model(&cls_rknn_app_ctx);
+    }else if (std::string(model_name) == "ppocr"){
+        const char* det_model_path = "model/ppocrv4_det.rknn";
+        const char* rec_model_path = "model/ppocrv4_rec.rknn";
+        // const char* image_path = "src/ppocr/test.jpg";
+        ppocr_system_app_context rknn_app_ctx;
+        memset(&rknn_app_ctx, 0, sizeof(ppocr_system_app_context));
+        ret = init_model(det_model_path, &rknn_app_ctx.det_context);
+        ret = init_model(rec_model_path, &rknn_app_ctx.rec_context);
+        ppocr_text_recog_array_result_t results = inference_ppocr_det_rec_model(&rknn_app_ctx, input_data, true);
+        ret = release_model(&rknn_app_ctx.det_context);
+        ret = release_model(&rknn_app_ctx.rec_context);
     }
     else if(std::string(model_name) == "rec_ren"){
         // 分类初始化
