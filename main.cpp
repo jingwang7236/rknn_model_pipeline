@@ -30,8 +30,12 @@ int main(int argc, char **argv) {
         return -1;
     }*/
     int ret;
-    const char *model_name = "det_knife";
-    const char *image_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/0.jpg";
+    // const char *model_name = "det_knife";
+    // const char *image_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/0.jpg";
+    
+    const char *model_name = argv[1];
+    const char *image_path = argv[2];
+
     // Load image
     int width, height, channel;
     unsigned char* data = stbi_load(image_path, &width, &height, &channel, 3);
