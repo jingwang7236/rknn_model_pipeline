@@ -8,6 +8,10 @@
 #include "stb_image.h"
 
 
+const char* model_name = "det_knife";
+const char* image_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/0.jpg";
+
+
 void print_rknn_app_context(const rknn_app_context_t& ctx) {
     std::cout << "rknn_ctx: " << ctx.rknn_ctx << std::endl;
    // std::cout << "io_num (input/output count): " << ctx.io_num.input_num << ", " << ctx.io_num.output_num << std::endl;
@@ -30,12 +34,7 @@ int main(int argc, char **argv) {
         return -1;
     }*/
     int ret;
-    // const char *model_name = "det_knife";
-    // const char *image_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/0.jpg";
     
-    const char *model_name = argv[1];
-    const char *image_path = argv[2];
-
     // Load image
     int width, height, channel;
     unsigned char* data = stbi_load(image_path, &width, &height, &channel, 3);

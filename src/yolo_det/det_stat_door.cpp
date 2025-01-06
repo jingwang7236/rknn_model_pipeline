@@ -15,13 +15,13 @@
 // #include "opencv2/opencv.hpp"
 #include "outer_model/model_func.hpp"
 
-const char* label_txt_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/class.txt";
+const char* label_txt_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/class_door.txt";
 
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/
 
-object_detect_result_list inference_det_knife_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true)
+object_detect_result_list inference_det_stat_door_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true)
 {
     object_detect_result_list od_results;
     // const char* model_path = "model/yolov10s.rknn";
@@ -83,10 +83,10 @@ object_detect_result_list inference_det_knife_model(rknn_app_context_t *app_ctx,
     {
         object_detect_result* det_result = &(od_results.results[i]);
         std::string cls_name = coco_cls_to_name(det_result->cls_id, 1);
-       /* if (cls_name != "knife")
+        if (cls_name != "closed" and cls_name != "open")
         {
             continue;
-        }*/
+        }
         count++;
         if (enable_logger) {
             printf("%s @ (%d %d %d %d) %.3f\n", coco_cls_to_name(det_result->cls_id, 1),
@@ -107,7 +107,7 @@ object_detect_result_list inference_det_knife_model(rknn_app_context_t *app_ctx,
         }
     }
     if (draw_box) {
-        const char* image_path = "result.png";
+        const char* image_path = "result_door.png";
         write_image(image_path, &src_image);
         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
     }
