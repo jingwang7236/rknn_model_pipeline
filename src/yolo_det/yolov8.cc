@@ -47,8 +47,8 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, image_buffer_t* img, obj
     letterbox_t letter_box;
     rknn_input inputs[app_ctx->io_num.n_input];
     rknn_output outputs[app_ctx->io_num.n_output];
-    const float nms_threshold = NMS_THRESH;      // Ä¬ÈÏµÄNMSãÐÖµ
-    const float box_conf_threshold = BOX_THRESH; // Ä¬ÈÏµÄÖÃÐÅ¶ÈãÐÖµ
+    const float nms_threshold = NMS_THRESH;      // é»˜è®¤çš„NMSé˜ˆå€¼
+    const float box_conf_threshold = BOX_THRESH; // é»˜è®¤çš„ç½®ä¿¡åº¦é˜ˆå€¼
     int bg_color = 114;
 
     if ((!app_ctx) || !(img) || (!od_results))

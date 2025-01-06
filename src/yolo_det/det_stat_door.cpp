@@ -15,21 +15,15 @@
 // #include "opencv2/opencv.hpp"
 #include "outer_model/model_func.hpp"
 
-const char* label_txt_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/class_door.txt";
 
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/
 
-object_detect_result_list inference_det_stat_door_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true)
+object_detect_result_list inference_det_stat_door_model(rknn_app_context_t *app_ctx, det_model_input input_data, char* label_txt_path,bool enable_logger = true)
 {
     object_detect_result_list od_results;
-    // const char* model_path = "model/yolov10s.rknn";
-    // const char *image_path = argv[2];
-
-    // cv::Mat orig_img_rgb;
-    // cv::cvtColor(orig_img, orig_img_rgb, cv::COLOR_BGR2RGB);
-    // cv::Mat orig_img 图片转为image_buffer_t格式
+    
     image_buffer_t src_image;
     memset(&src_image, 0, sizeof(image_buffer_t));
     src_image.width = input_data.width;
