@@ -120,4 +120,18 @@ typedef struct {
 } object_detect_obb_result_list;
 
 
+//算法输入数据格式
+typedef struct rec_model_input{
+    int width;
+    int height;
+    int channel;
+    unsigned char *data;
+} rec_model_input;
+
+// ResNet
+typedef struct {
+    int cls;
+    float score;
+} resnet_result;
+
 #endif //_RKNN_DET_CLS_H_

@@ -144,7 +144,7 @@ static int convert_image_with_letterbox_opencv(rknn_app_context_t *app_ctx, cons
     // 填充图像
     cv::copyMakeBorder(resize_img, dist_img, top_pad, bottom_pad, left_pad, right_pad, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
     
-    cv::imwrite("input_scale.png", dist_img);
+    // cv::imwrite("input_scale.png", dist_img);
 
     letter_box->scale = scale;
     letter_box->x_pad = left_pad;
