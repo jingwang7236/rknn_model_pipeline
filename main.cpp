@@ -190,7 +190,6 @@ int main(int argc, char **argv) {
     }else if (std::string(model_name) == "ppocr"){
         const char* det_model_path = "model/ppocrv4_det.rknn";
         const char* rec_model_path = "model/ppocrv4_rec.rknn";
-        // const char* image_path = "src/ppocr/test.jpg";
         ppocr_system_app_context rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(ppocr_system_app_context));
         ret = init_model(det_model_path, &rknn_app_ctx.det_context);
