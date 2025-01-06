@@ -15,13 +15,12 @@
 // #include "opencv2/opencv.hpp"
 #include "outer_model/model_func.hpp"
 
-const char* label_txt_path = "/home/firefly/.vs/rknn_model_pipeline/246fd1b5-19ee-4fbb-a1da-78dabdd2891b/src/build/class_gun.txt";
 
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/
 
-object_detect_result_list inference_det_gun_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true)
+object_detect_result_list inference_det_gun_model(rknn_app_context_t *app_ctx, det_model_input input_data, char* label_txt_path , bool enable_logger = true)
 {
     object_detect_result_list od_results;
     // cv::Mat orig_img_rgb;
