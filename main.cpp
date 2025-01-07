@@ -262,9 +262,7 @@ int main(int argc, char **argv) {
         }
 
         resnet_result rec_result = inference_rec_person_resnet18_model(&rec_rknn_app_ctx, input_data, true);
-        std::cout << "Class index: " << rec_result.cls
-          << ", Score: " << rec_result.score
-          << std::endl;
+        std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
     else if(std::string(model_name) == "det_hand"){
@@ -282,6 +280,28 @@ int main(int argc, char **argv) {
         // print_rknn_app_context(rknn_app_ctx);
         
         object_detect_result_list result = inference_det_hand_model(&rknn_app_ctx, input_data, false, false); //推理
+
+        ret = release_model(&rknn_app_ctx);
+        
+        if (ret != 0){
+            printf("release_yolov8_model fail! ret=%d\n", ret);
+        }
+    }
+    else if(std::string(model_name) == "det_kx"){
+        rknn_app_context_t rknn_app_ctx;
+        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        const char* model_path = "model/det_kx_s_24_12_18.rknn";
+        ret = init_model(model_path, &rknn_app_ctx);
+
+        if (ret != 0){
+            printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        rknn_app_ctx.is_quant = true;
+        // print_rknn_app_context(rknn_app_ctx);
+        
+        object_detect_result_list result = inference_det_kx_model(&rknn_app_ctx, input_data, false); //推理
 
         ret = release_model(&rknn_app_ctx);
         
