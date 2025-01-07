@@ -19,7 +19,7 @@ int post_process_det(rknn_app_context_t *app_ctx, void *outputs, letterbox_t *le
 int post_process_obb(rknn_app_context_t* app_ctx, void* outputs, letterbox_t* letter_box, float conf_threshold, float nms_threshold, object_detect_obb_result_list* od_results);
 int post_process_pose(rknn_app_context_t* app_ctx, void* outputs, letterbox_t* letter_box, float conf_threshold, float nms_threshold, object_detect_pose_result_list* od_results);
 
-void deinitPostProcess();
+// void deinitPostProcess();
 
 int inference_yolov8_model(rknn_app_context_t* app_ctx, image_buffer_t* img, object_detect_result_list* od_results);
 int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_detect_result_list* od_results, letterbox_t letter_box,

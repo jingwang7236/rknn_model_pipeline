@@ -11,6 +11,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include/utils
     ${CMAKE_SOURCE_DIR}/include/outer_model  # 外部模型使用的头文件，提供给端侧使用
     ${CMAKE_SOURCE_DIR}/include/inter_model  # 内部模型使用的头文件
+    ${CMAKE_SOURCE_DIR}/include/ppocr        # ppocr使用的头文件
     ${CMAKE_SOURCE_DIR}/third_party/rknpu2/include  # 第三方库头文件
     ${CMAKE_SOURCE_DIR}/third_party/librga/include
     ${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/include
@@ -30,6 +31,7 @@ file(GLOB_RECURSE SOURCE
     ${CMAKE_SOURCE_DIR}/src/classify_model/*.c*
     ${CMAKE_SOURCE_DIR}/src/business_pipeline/*.c*  # 业务逻辑
     ${CMAKE_SOURCE_DIR}/src/utils/*.c*
+    ${CMAKE_SOURCE_DIR}/src/ppocr/*.c*
     ${CMAKE_SOURCE_DIR}/src/resnet18/*.c*
     )
 message("HEADER: ${HEADER}")
