@@ -19,7 +19,7 @@
 /*-------------------------------------------
                 Constants
 -------------------------------------------*/
-#define RET_TOP_K 1
+#define REC_REN_RET_TOP_K 1
 #define IMG_HEIGHT 320
 #define IMG_WIDTH 160
 #define READ_IMAGE_TYPE STBIR_RGB
@@ -73,7 +73,7 @@ resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, d
     // src_image.virt_addr = resized_img.data;
     src_image.virt_addr = resized_data;
     
-    int ret = inference_resnet_model(app_ctx, &src_image, &od_results, RET_TOP_K);
+    int ret = inference_resnet_model(app_ctx, &src_image, &od_results, REC_REN_RET_TOP_K);
     if (ret != 0)
     {
         od_results.cls = -1;
