@@ -17,7 +17,7 @@ endif ()
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--allow-shlib-undefined")
 
 # install target and libraries
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/rk3588_test_pipeline)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/rk3588_test_pipeline)  # delete install
  
 
 # 设置CMake安装时的RPATH（运行时库搜索路径）
@@ -77,14 +77,14 @@ install(TARGETS ${PROJECT_NAME} DESTINATION ./)
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/coco_80_labels_list.txt DESTINATION ./model)
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/PhoneDet.rknn DESTINATION ./model)
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/HeaderDet.rknn DESTINATION ./model)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/rec_ren_1225_resnet18.rknn DESTINATION ./model)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/model/rec_ren_1225_resnet18.rknn DESTINATION ./model)
 # 头文件拷贝到include目录下
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_params.hpp DESTINATION ./include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/outer_model/model_func.hpp DESTINATION ./include)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/utils/common.h DESTINATION ./include)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image.h DESTINATION ./include)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image_resize2.h DESTINATION ./include)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h DESTINATION ./include)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/utils/common.h DESTINATION ./include)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image.h DESTINATION ./include)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image_resize2.h DESTINATION ./include)
+# install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h DESTINATION ./include)
 
 # 设置调试标志
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -o0")
