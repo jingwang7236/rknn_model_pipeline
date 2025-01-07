@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
         }
 
         resnet_result rec_result = inference_rec_person_resnet18_model(&rec_rknn_app_ctx, input_data, true);
-        std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+        // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
     else if(std::string(model_name) == "det_hand"){
@@ -308,6 +308,23 @@ int main(int argc, char **argv) {
         if (ret != 0){
             printf("release_yolov8_model fail! ret=%d\n", ret);
         }
+    }
+    else if(std::string(model_name) == "rec_hand"){
+        // 分类初始化
+        const char* model_path = "model/rec_hand_1216_resnet18.rknn";
+        rknn_app_context_t rec_rknn_app_ctx;
+        memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        ret = init_model(model_path, &rec_rknn_app_ctx);  
+        
+        if (ret != 0)
+        {
+            printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        resnet_result rec_result = inference_rec_hand_resnet18_model(&rec_rknn_app_ctx, input_data, true);
+        std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+        ret = release_model(&rec_rknn_app_ctx);
     }
     else {
         std::cerr << "Unknown model_name: " << model_name << std::endl;
