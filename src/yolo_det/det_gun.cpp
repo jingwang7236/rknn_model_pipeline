@@ -20,7 +20,7 @@
                   Main Function
 -------------------------------------------*/
 
-object_detect_result_list inference_det_gun_model(rknn_app_context_t *app_ctx, det_model_input input_data, char* label_txt_path , bool enable_logger = true)
+object_detect_result_list inference_det_gun_model(rknn_app_context_t *app_ctx, det_model_input input_data, const char* label_txt_path , bool enable_logger = true)
 {
     object_detect_result_list od_results;
     // cv::Mat orig_img_rgb;

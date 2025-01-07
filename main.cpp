@@ -8,8 +8,8 @@
 #include "stb_image.h"
 
 
-const char* model_name = "det_knife";
-const char* image_path = "0.jpg";
+// const char* model_name = "det_knife";
+// const char* image_path = "0.jpg";
 
 
 void print_rknn_app_context(const rknn_app_context_t& ctx) {
@@ -29,6 +29,9 @@ int main(int argc, char **argv) {
         return -1;
     }*/
     int ret;
+
+    const char *model_name = argv[1];
+    const char *image_path = argv[2];
     
     // Load image
     int width, height, channel;
