@@ -23,9 +23,11 @@
 #include "image_utils.h"
 
 #include <sys/time.h>
+
 #include "opencv2/opencv.hpp"
 
 #include "yolo_postprocess.h"
+
 
 static inline int64_t getCurrentTimeUs()
 {
@@ -445,7 +447,6 @@ int inference_yolov8_obb_model_opencv(rknn_app_context_t* app_ctx, cv::Mat src_i
 }
 
 
-
 int inference_yolov8_pose_model(rknn_app_context_t* app_ctx, image_buffer_t* img, object_detect_pose_result_list* od_results)
 {
     int ret;
@@ -547,53 +548,23 @@ out:
     return ret;
 }
 
-
-int inference_yolov8_pose_model_opencv(rknn_app_context_t* app_ctx, cv::Mat src_img, object_detect_pose_result_list* od_results)
-{
-    int ret;
-    cv::Mat dst_img;
-    letterbox_t letter_box;
-    rknn_input inputs[app_ctx->io_num.n_input];
-    rknn_output outputs[app_ctx->io_num.n_output];
-    const float nms_threshold = NMS_THRESH;      // Default NMS threshold
-    const float box_conf_threshold = BOX_THRESH; // Default box threshold
-    int bg_color = 114;
-
-    if ((!app_ctx) || (!od_results))
-    {
-
-int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_detect_result_list* od_results, letterbox_t letter_box, float nms_threshold, float box_conf_threshold, bool enable_logger){
+int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_detect_result_list* od_results, letterbox_t letter_box, float nms_threshold, float box_conf_threshold, bool enable_logger) {
     int ret;
     rknn_input inputs[app_ctx->io_num.n_input];
     rknn_output outputs[app_ctx->io_num.n_output];
-    
+
 
     if ((!app_ctx) || !(image_buf) || (!od_results))
     {
         printf("ERROR: Input app_ctx/image_buffer/od_results is null!\n");
-
         return -1;
     }
 
     memset(od_results, 0x00, sizeof(*od_results));
-
-    memset(&letter_box, 0, sizeof(letterbox_t));
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // Pre Process
-    ret = convert_image_with_letterbox_opencv(app_ctx, src_img, dst_img, &letter_box);
-    if (ret < 0)
-    {
-        printf("convert_image_with_letterbox_opencv fail! ret=%d\n", ret);
-        return -1;
-    }
-
-
-    memset(inputs, 0, sizeof(inputs));
-    memset(outputs, 0, sizeof(outputs));
-    
-    // 妯″瀷寮�濮嬫帹鐞嗘椂闂存埑
+    // 模型开始推理时间戳
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     inputs[0].index = 0;
@@ -602,22 +573,18 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     inputs[0].size = app_ctx->model_width * app_ctx->model_height * app_ctx->model_channel;
     inputs[0].buf = image_buf;
 
-
     ret = rknn_inputs_set(app_ctx->rknn_ctx, app_ctx->io_num.n_input, inputs);
     if (ret < 0)
     {
         printf("ERROR: rknn_input_set fail! ret=%d\n", ret);
-
         return -1;
     }
 
     // Run
-
     ret = rknn_run(app_ctx->rknn_ctx, nullptr);
     if (ret < 0)
     {
         printf("ERROR: rknn_run fail! ret=%d\n", ret);
-
         return -1;
     }
 
@@ -630,7 +597,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     }
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
-    // 鎺ㄧ悊缁撴潫鏃堕棿
+    // 推理结束时间
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     if (ret < 0)
@@ -647,8 +614,8 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // 注释
-    if (enable_logger){
+    // 计算时间
+    if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
         auto postprocess_duration = std::chrono::duration<double, std::milli>(total_end_time - inference_end_time);
@@ -658,8 +625,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
             total_duration.count(), inference_duration.count(), postprocess_duration.count());
     }
 
-    out:
-    
+out:
+
     return ret;
 }
-
