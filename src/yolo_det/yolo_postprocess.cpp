@@ -11,6 +11,7 @@
 
 #include "Float16.h"
 #include "yolo_postprocess.h"
+#include <sys/time.h>
 
 inline static int clamp_hw(float val, int min, int max) { return val > min ? (val < max ? val : max) : min; }
 
@@ -306,6 +307,7 @@ void softmax_hw(float* input, int size) {
 static int nms_hw(int validCount, std::vector<float> &outputLocations, std::vector<float> objProbs, std::vector<int> classIds, std::vector<int> &order,
                int filterId, float threshold){
     // 优化点1：双指针+滑动窗口性质+YOLO检测结果性质，简化IoU计算
+    // int invalid_count = 0;
     int i = 0, j = 1;
     while (i < validCount && j < validCount){
         while (i < validCount && (order[i] == -1 || classIds[order[i]] != filterId)) i++;  // 找到最小索引满足
@@ -326,9 +328,11 @@ static int nms_hw(int validCount, std::vector<float> &outputLocations, std::vect
             ) {
                 if (objProbs[i] >= objProbs[j]) {
                     order[j] = -1;  // 置信度较低的框置为无效
+                    // invalid_count++;
                     j++;
                 } else {
                     order[i] = -1;
+                    //  invalid_count++;
                     i = j;  // 当前最小置信度低导致无效，修改为移动索引
                     j = i + 1;
                     break;
@@ -340,6 +344,8 @@ static int nms_hw(int validCount, std::vector<float> &outputLocations, std::vect
             }
         }
     }
+    
+    // printf("total valid count: %d, exclude invalid count: %d\n", validCount, invalid_count);
 
     for (int i = 0; i < validCount; ++i){
         int n = order[i];
@@ -416,8 +422,48 @@ static int nms_obb_hw(int validCount, std::vector<float>& outputLocations, std::
     return 0;
 }
 
-static int nms_pose_hw(int validCount, std::vector<float>& outputLocations, std::vector<int> classIds, std::vector<int>& order,
+static int nms_pose_hw(int validCount, std::vector<float>& outputLocations, std::vector<float> objProbs, std::vector<int> classIds, std::vector<int>& order,
     int filterId, float threshold){
+    // 优化点1：双指针+滑动窗口性质+YOLO检测结果性质，简化IoU计算
+    // int invalid_count = 0;
+    int i = 0, j = 1;
+    while (i < validCount && j < validCount){
+        while (i < validCount && (order[i] == -1 || classIds[order[i]] != filterId)) i++;  // 找到最小索引满足
+        while (j < validCount && (order[j] == -1 || classIds[order[j]] != filterId)) j++;  // 找到移动索引满足
+        if (j >= validCount) break;
+        
+        int n = order[i];
+
+        while (j < validCount && order[j] != -1 && classIds[order[j]] == filterId){
+            int m = order[j];
+
+            // 计算两个框的坐标差值，则选择置信度较低的框置为 -1
+            if (
+                fabs(outputLocations[n * 5 + 0] - outputLocations[m * 5 + 0]) < 1.5 &&  // x
+                fabs(outputLocations[n * 5 + 1] - outputLocations[m * 5 + 1]) < 1.5 &&  // y
+                fabs(outputLocations[n * 5 + 2] - outputLocations[m * 5 + 2]) < 2.0 &&  // w
+                fabs(outputLocations[n * 5 + 3] - outputLocations[m * 5 + 3]) < 2.0     // h
+            ) {
+                if (objProbs[i] >= objProbs[j]) {
+                    order[j] = -1;  // 置信度较低的框置为无效
+                    // invalid_count++;
+                    j++;
+                } else {
+                    order[i] = -1;
+                    // invalid_count++;
+                    i = j;  // 当前最小置信度低导致无效，修改为移动索引
+                    j = i + 1;
+                    break;
+                }
+            }else{
+                i = j;  // 当前最小和下一个不同导致无效，修改为移动索引
+                j = i + 1;
+                break;
+            }
+        }
+    }
+    // printf("total valid count: %d, exclude invalid count: %d\n", validCount, invalid_count);
+
     for (int i = 0; i < validCount; ++i){
         int n = order[i];
         if (n == -1 || classIds[n] != filterId){
@@ -438,10 +484,21 @@ static int nms_pose_hw(int validCount, std::vector<float>& outputLocations, std:
             float xmax1 = outputLocations[m * 5 + 0] + outputLocations[m * 5 + 2];
             float ymax1 = outputLocations[m * 5 + 1] + outputLocations[m * 5 + 3];
 
+            // 优化点2：两个框没有交集，直接跳过
+            if (xmin0 > xmax1 || xmax0 < xmin1 || ymin0 > ymax1 || ymax0 < ymin1) {
+                continue;
+            }
+
             float iou = CalculateOverlap_hw(xmin0, ymin0, xmax0, ymax0, xmin1, ymin1, xmax1, ymax1);
 
+            // 优化点3：引入置信度，提早判断无效，并选择高置信度结果
             if (iou > threshold){
-                order[j] = -1;
+                if (objProbs[i] >= objProbs[j]){
+                    order[j] = -1;
+                }else{
+                    order[i] = -1;
+                    break;
+                }
             }
         }
     }
@@ -679,8 +736,7 @@ static int process_u8_pose_hw(uint8_t* input, int grid_h, int grid_w, int stride
         for (int w = 0; w < grid_w; w++) {
             for (int a = 0; a < obj_class_num; a++) {
                 if (input[(input_loc_len + a) * grid_w * grid_h + h * grid_w + w] >= thres_i8) { //[1,tensor_len,grid_h,grid_w]
-                    float box_conf_f32 = sigmoid_hw(deqnt_affine_u8_to_f32_hw(input[(input_loc_len + a) * grid_w * grid_h + h * grid_w + w],
-                        zp, scale));
+                    float box_conf_f32 = sigmoid_hw(deqnt_affine_u8_to_f32_hw(input[(input_loc_len + a) * grid_w * grid_h + h * grid_w + w], zp, scale));
                     float loc[input_loc_len];
                     for (int i = 0; i < input_loc_len; ++i) {
                         loc[i] = deqnt_affine_u8_to_f32_hw(input[i * grid_w * grid_h + h * grid_w + w], zp, scale);
@@ -852,7 +908,7 @@ static int process_i8_obb_hw(int8_t* input, int8_t* angle_feature, int grid_h, i
 
 static int process_i8_pose_hw(int8_t* input, int grid_h, int grid_w, int stride,
     std::vector<float>& boxes, std::vector<float>& boxScores, std::vector<int>& classId, float threshold,
-    int32_t zp, float scale, int index, int obj_class_num=1) {
+    int32_t zp, float scale, int index, int obj_class_num) {
     int input_loc_len = 64;
     int tensor_len = input_loc_len + obj_class_num;
     int validCount = 0;
@@ -862,8 +918,7 @@ static int process_i8_pose_hw(int8_t* input, int grid_h, int grid_w, int stride,
         for (int w = 0; w < grid_w; w++) {
             for (int a = 0; a < obj_class_num; a++) {
                 if (input[(input_loc_len + a) * grid_w * grid_h + h * grid_w + w] >= thres_i8) { //[1,tensor_len,grid_h,grid_w]
-                    float box_conf_f32 = sigmoid_hw(deqnt_affine_to_f32_hw(input[(input_loc_len + a) * grid_w * grid_h + h * grid_w + w],
-                        zp, scale));
+                    float box_conf_f32 = sigmoid_hw(deqnt_affine_to_f32_hw(input[(input_loc_len + a) * grid_w * grid_h + h * grid_w + w], zp, scale));
                     float loc[input_loc_len];
                     for (int i = 0; i < input_loc_len; ++i) {
                         loc[i] = deqnt_affine_to_f32_hw(input[i * grid_w * grid_h + h * grid_w + w], zp, scale);
@@ -1428,8 +1483,9 @@ int post_process_det_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t*
         indexArray.push_back(i);
     }
     
+    // add prob judge, no longer need sort
     // quick_sort_indice_inverse_hw(objProbs, 0, validCount - 1, indexArray);
-    sort_with_indices(objProbs, indexArray);
+    // sort_with_indices(objProbs, indexArray);
 
     std::set<int> class_set(std::begin(classId), std::end(classId));
 
@@ -1557,7 +1613,7 @@ int post_process_obb_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t*
 }
 
 int post_process_pose_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t* letter_box, float conf_threshold, float nms_threshold,
-    object_detect_pose_result_list* od_results, int obj_class_num, int kpt_num) {
+    object_detect_pose_result_list* od_results, int obj_class_num, int kpt_num, int result_num) {
     rknn_output* _outputs = (rknn_output*)outputs;
 
     std::vector<float> filterBoxes;
@@ -1595,12 +1651,13 @@ int post_process_pose_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t
     for (int i = 0; i < validCount; ++i) {
         indexArray.push_back(i);
     }
-    quick_sort_indice_inverse_hw(objProbs, 0, validCount - 1, indexArray);
+    
+    // quick_sort_indice_inverse_hw(objProbs, 0, validCount - 1, indexArray);
 
     std::set<int> class_set(std::begin(classId), std::end(classId));
 
     for (auto c : class_set) {
-        nms_pose_hw(validCount, filterBoxes, classId, indexArray, c, nms_threshold);
+        nms_pose_hw(validCount, filterBoxes, objProbs, classId, indexArray, c, nms_threshold);
     }
 
     int last_count = 0;
@@ -1620,19 +1677,19 @@ int post_process_pose_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t
 
         for (int j = 0; j < kpt_num; ++j) {
             if (app_ctx->is_quant) {
-                od_results->results[last_count].keypoints[j][0] = ((float)((rknpu2::float16*)_outputs[3].buf)[j * 3 * 8400 + 0 * 8400 + keypoints_index]
+                od_results->results[last_count].keypoints[j][0] = ((float)((rknpu2::float16*)_outputs[3].buf)[j * 3 * result_num + 0 * result_num + keypoints_index]
                     - letter_box->x_pad) / letter_box->scale;
-                od_results->results[last_count].keypoints[j][1] = ((float)((rknpu2::float16*)_outputs[3].buf)[j * 3 * 8400 + 1 * 8400 + keypoints_index]
+                od_results->results[last_count].keypoints[j][1] = ((float)((rknpu2::float16*)_outputs[3].buf)[j * 3 * result_num + 1 * result_num + keypoints_index]
                     - letter_box->y_pad) / letter_box->scale;
-                od_results->results[last_count].keypoints[j][2] = (float)((rknpu2::float16*)_outputs[3].buf)[j * 3 * 8400 + 2 * 8400 + keypoints_index];
+                od_results->results[last_count].keypoints[j][2] = (float)((rknpu2::float16*)_outputs[3].buf)[j * 3 * result_num + 2 * result_num + keypoints_index];
             }
             else
             {
-                od_results->results[last_count].keypoints[j][0] = (((float*)_outputs[3].buf)[j * 3 * 8400 + 0 * 8400 + keypoints_index]
+                od_results->results[last_count].keypoints[j][0] = (((float*)_outputs[3].buf)[j * 3 * result_num + 0 * result_num + keypoints_index]
                     - letter_box->x_pad) / letter_box->scale;
-                od_results->results[last_count].keypoints[j][1] = (((float*)_outputs[3].buf)[j * 3 * 8400 + 1 * 8400 + keypoints_index]
+                od_results->results[last_count].keypoints[j][1] = (((float*)_outputs[3].buf)[j * 3 * result_num + 1 * result_num + keypoints_index]
                     - letter_box->y_pad) / letter_box->scale;
-                od_results->results[last_count].keypoints[j][2] = ((float*)_outputs[3].buf)[j * 3 * 8400 + 2 * 8400 + keypoints_index];
+                od_results->results[last_count].keypoints[j][2] = ((float*)_outputs[3].buf)[j * 3 * result_num + 2 * result_num + keypoints_index];
             }
         }
 

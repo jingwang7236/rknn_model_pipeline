@@ -258,10 +258,8 @@ int main(int argc, char **argv) {
             return -1;
         }
 
-        resnet_result rec_result = inference_rec_person_resnet18_model(&rec_rknn_app_ctx, input_data, true);
-        std::cout << "Class index: " << rec_result.cls
-          << ", Score: " << rec_result.score
-          << std::endl;
+        resnet_result rec_result = inference_rec_person_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
     else if(std::string(model_name) == "det_hand"){
@@ -286,6 +284,107 @@ int main(int argc, char **argv) {
             printf("release_yolov8_model fail! ret=%d\n", ret);
         }
     }
+    else if(std::string(model_name) == "det_kx"){
+        rknn_app_context_t rknn_app_ctx;
+        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        const char* model_path = "model/det_kx_s_24_12_18.rknn";
+        ret = init_model(model_path, &rknn_app_ctx);
+
+        if (ret != 0){
+            printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        rknn_app_ctx.is_quant = true;
+        // print_rknn_app_context(rknn_app_ctx);
+        
+        object_detect_result_list result = inference_det_kx_model(&rknn_app_ctx, input_data, false); //推理
+
+        ret = release_model(&rknn_app_ctx);
+        
+        if (ret != 0){
+            printf("release_yolov8_model fail! ret=%d\n", ret);
+        }
+    }
+    else if(std::string(model_name) == "rec_hand"){
+        // 分类初始化
+        const char* model_path = "model/rec_hand_1216_resnet18.rknn";
+        rknn_app_context_t rec_rknn_app_ctx;
+        memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        ret = init_model(model_path, &rec_rknn_app_ctx);  
+        
+        if (ret != 0)
+        {
+            printf("init rec_hand model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        resnet_result rec_result = inference_rec_hand_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+        ret = release_model(&rec_rknn_app_ctx);
+    }
+    else if(std::string(model_name) == "pose_ren"){
+        // 分类初始化
+        const char* model_path = "model/yolov8s-pose.rknn";
+        rknn_app_context_t rec_rknn_app_ctx;
+        memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        ret = init_model(model_path, &rec_rknn_app_ctx);  
+        
+        if (ret != 0){
+            printf("init pose_ren model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        object_detect_pose_result_list pose_result = inference_pose_ren_model(&rec_rknn_app_ctx, input_data, false);
+        ret = release_model(&rec_rknn_app_ctx);
+    }
+    else if(std::string(model_name) == "rec_kx_orient"){
+        // 分类初始化
+        const char* model_path = "model/rec_kx_orient_1207_resnet18.rknn";
+        rknn_app_context_t rec_rknn_app_ctx;
+        memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        ret = init_model(model_path, &rec_rknn_app_ctx);  
+        
+        if (ret != 0)
+        {
+            printf("init rec_kx_orient model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        resnet_result rec_result = inference_rec_kx_orient_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+        ret = release_model(&rec_rknn_app_ctx);
+    }
+    //else if(std::string(model_name) == "pose_kx_hp"){
+    //    // 分类初始化
+    //    const char* model_path = "model/pose_kx_hp_s_24_12_12.rknn";
+    //    rknn_app_context_t rec_rknn_app_ctx;
+    //    memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    ret = init_model(model_path, &rec_rknn_app_ctx);  
+    //    
+    //    if (ret != 0){
+    //        printf("init pose_kx_hp model fail! ret=%d model_path=%s\n", ret, model_path);
+    //        return -1;
+    //    }
+
+    //    object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&rec_rknn_app_ctx, input_data, false);
+    //    ret = release_model(&rec_rknn_app_ctx);
+    //}
+    //else if(std::string(model_name) == "pose_kx_sz"){
+    //    // 分类初始化
+    //    const char* model_path = "model/pose_kx_sz_s_24_12_07.rknn";
+    //    rknn_app_context_t rec_rknn_app_ctx;
+    //    memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+    //    ret = init_model(model_path, &rec_rknn_app_ctx);  
+    //    
+    //    if (ret != 0){
+    //        printf("init pose_kx_sz model fail! ret=%d model_path=%s\n", ret, model_path);
+    //        return -1;
+    //    }
+
+    //    object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
+    //    ret = release_model(&rec_rknn_app_ctx);
+    //}
     else if (std::string(model_name) == "obb_stick") {
 
         /* 推理参数 width height nms_ths box_ths*/
@@ -310,6 +409,24 @@ int main(int argc, char **argv) {
         {
             printf("release_yolov8_model fail! ret=%d\n", ret);
         }
+    }
+
+    else if (std::string(model_name) == "rec_stat_door") {
+        // 分类初始化
+        const char* model_path = "../model/cls_stat_door_model_resnet18_150108_i8.rknn";
+        rknn_app_context_t rec_rknn_app_ctx;
+        memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        ret = init_model(model_path, &rec_rknn_app_ctx);
+
+        if (ret != 0)
+        {
+            printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
+        resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+        ret = release_model(&rec_rknn_app_ctx);
         }
     else {
         std::cerr << "Unknown model_name: " << model_name << std::endl;
