@@ -17,7 +17,7 @@ endif ()
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--allow-shlib-undefined")
 
 # install target and libraries
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/rk3588_test_pipeline)  # delete install
+set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/rk3588_test_pipeline)
  
 
 # 设置CMake安装时的RPATH（运行时库搜索路径）
