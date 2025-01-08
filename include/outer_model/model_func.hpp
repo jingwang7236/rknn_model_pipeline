@@ -36,6 +36,18 @@ object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, 
 object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true); 
 
 // rec_hand
-resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false);
+resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+
+// pose ren
+object_detect_pose_result_list inference_pose_ren_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true);
+
+// rec kx orient
+resnet_result inference_rec_kx_orient_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true);
+
+// pose kx_hp
+object_detect_pose_result_list inference_pose_kx_hp_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true);
+
+// pose kx_sz
+object_detect_pose_result_list inference_pose_kx_sz_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = true);
 
 #endif // _RKNN_DET_CLS_FUNC_H_
