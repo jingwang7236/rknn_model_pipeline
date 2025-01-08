@@ -23,44 +23,11 @@
 #include "image_utils.h"
 
 #include <sys/time.h>
+
+#include "opencv2/opencv.hpp"
+
 #include "yolo_postprocess.h"
 
-static int convert_image_with_letterbox_opencv(rknn_app_context_t *app_ctx, const cv::Mat& orig_img, cv::Mat& dist_img, letterbox_t *letter_box)
-{
-    // è·å–åŸå§‹å›¾åƒçš„å®½åº¦å’Œé«˜åº¦
-    int originalWidth = orig_img.cols;
-    int originalHeight = orig_img.rows;
-    // è·å–ç›®æ ‡å›¾åƒçš„å®½åº¦å’Œé«˜åº¦
-    int targetWidth = app_ctx->model_width;
-    int targetHeight =  app_ctx->model_height;
-    // è®¡ç®—ç¼©æ”¾æ¯”ä¾‹
-    float widthScale = (float)targetWidth / originalWidth;
-    float heightScale = (float)targetHeight / originalHeight;
-    float scale = (widthScale < heightScale) ? widthScale : heightScale;
-
-    // è®¡ç®—æ–°çš„å®½åº¦å’Œé«˜åº¦
-    int newWidth = (int)(originalWidth * scale);
-    int newHeight = (int)(originalHeight * scale);
-    
-    cv::Mat resize_img;
-    cv::resize(orig_img, resize_img, cv::Size(newWidth, newHeight));
-    // è®¡ç®—éœ€è¦å¡«å……çš„åƒç´ 
-    int left_pad = (targetWidth - newWidth) / 2;  // å±…ä¸­è´´å›¾
-    int right_pad = targetWidth - newWidth - left_pad;
-    int top_pad = (targetHeight - newHeight) / 2;
-    int bottom_pad = targetHeight - newHeight - top_pad;
-
-    // å¡«å……å›¾åƒ
-    cv::copyMakeBorder(resize_img, dist_img, top_pad, bottom_pad, left_pad, right_pad, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
-    
-    cv::imwrite("input_scale.png", dist_img);
-
-    letter_box->scale = scale;
-    letter_box->x_pad = left_pad;
-    letter_box->y_pad = top_pad;
-    
-    return 0;
-}
 
 static inline int64_t getCurrentTimeUs()
 {
@@ -78,6 +45,45 @@ static void dump_tensor_attr(rknn_tensor_attr* attr)
         get_qnt_type_string(attr->qnt_type), attr->zp, attr->scale);
 }
 
+
+static int convert_image_with_letterbox_opencv(rknn_app_context_t* app_ctx, const cv::Mat& orig_img, cv::Mat& dist_img, letterbox_t* letter_box)
+{
+    // »ñÈ¡Ô­Ê¼Í¼ÏñµÄ¿í¶ÈºÍ¸ß¶È
+    int originalWidth = orig_img.cols;
+    int originalHeight = orig_img.rows;
+    // »ñÈ¡Ä¿±êÍ¼ÏñµÄ¿í¶ÈºÍ¸ß¶È
+    int targetWidth = app_ctx->model_width;
+    int targetHeight = app_ctx->model_height;
+    // ¼ÆËãËõ·Å±ÈÀı
+    float widthScale = (float)targetWidth / originalWidth;
+    float heightScale = (float)targetHeight / originalHeight;
+    float scale = (widthScale < heightScale) ? widthScale : heightScale;
+
+    // ¼ÆËãĞÂµÄ¿í¶ÈºÍ¸ß¶È
+    int newWidth = (int)(originalWidth * scale);
+    int newHeight = (int)(originalHeight * scale);
+
+    cv::Mat resize_img;
+    cv::resize(orig_img, resize_img, cv::Size(newWidth, newHeight));
+    // ¼ÆËãĞèÒªÌî³äµÄÏñËØ
+    int left_pad = (targetWidth - newWidth) / 2;  // ¾ÓÖĞÌùÍ¼
+    int right_pad = targetWidth - newWidth - left_pad;
+    int top_pad = (targetHeight - newHeight) / 2;
+    int bottom_pad = targetHeight - newHeight - top_pad;
+
+    // Ìî³äÍ¼Ïñ
+    cv::copyMakeBorder(resize_img, dist_img, top_pad, bottom_pad, left_pad, right_pad, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+
+    cv::imwrite("input_scale.png", dist_img);
+
+    letter_box->scale = scale;
+    letter_box->x_pad = left_pad;
+    letter_box->y_pad = top_pad;
+
+    return 0;
+}
+
+
 int inference_yolov8_model(rknn_app_context_t* app_ctx, image_buffer_t* img, object_detect_result_list* od_results)
 {
     int ret;
@@ -85,8 +91,10 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, image_buffer_t* img, obj
     letterbox_t letter_box;
     rknn_input inputs[app_ctx->io_num.n_input];
     rknn_output outputs[app_ctx->io_num.n_output];
-    const float nms_threshold = NMS_THRESH;      // é»˜è®¤çš„NMSé˜ˆå€¼
-    const float box_conf_threshold = BOX_THRESH; // é»˜è®¤çš„ç½®ä¿¡åº¦é˜ˆå€¼
+
+    const float nms_threshold = NMS_THRESH;      // Ä¬ÈÏµÄNMSãĞÖµ
+    const float box_conf_threshold = BOX_THRESH; // Ä¬ÈÏµÄÖÃĞÅ¶ÈãĞÖµ
+
     int bg_color = 114;
 
     if ((!app_ctx) || !(img) || (!od_results))
@@ -171,6 +179,84 @@ out:
         free(dst_img.virt_addr);
     }
 
+    return ret;
+}
+
+
+int inference_yolov8_model_opencv(rknn_app_context_t* app_ctx, cv::Mat src_img, object_detect_result_list* od_results)
+{
+    int ret;
+    letterbox_t letter_box;
+    rknn_input inputs[app_ctx->io_num.n_input];
+    rknn_output outputs[app_ctx->io_num.n_output];
+    const float nms_threshold = NMS_THRESH;      // Ä¬ÈÏµÄNMSãĞÖµ
+    const float box_conf_threshold = BOX_THRESH; // Ä¬ÈÏµÄÖÃĞÅ¶ÈãĞÖµ
+    int bg_color = 114;
+
+    if ((!app_ctx) || (!od_results))
+    {
+        return -1;
+    }
+
+    memset(od_results, 0x00, sizeof(*od_results));
+    memset(&letter_box, 0, sizeof(letterbox_t));
+    memset(inputs, 0, sizeof(inputs));
+    memset(outputs, 0, sizeof(outputs));
+
+    // Pre Process
+    cv::Mat dist_img;
+    ret = convert_image_with_letterbox_opencv(app_ctx, src_img, dist_img, &letter_box);
+    if (ret < 0)
+    {
+        printf("convert_image_with_letterbox_opencv fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Set Input Data
+    inputs[0].index = 0;
+    inputs[0].type = RKNN_TENSOR_UINT8;
+    inputs[0].fmt = RKNN_TENSOR_NHWC;
+    inputs[0].size = dist_img.cols * dist_img.rows * dist_img.channels() * sizeof(uint8_t);
+    inputs[0].buf = dist_img.data;
+
+    ret = rknn_inputs_set(app_ctx->rknn_ctx, app_ctx->io_num.n_input, inputs);
+    if (ret < 0)
+    {
+        printf("rknn_input_set fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Run
+    // printf("rknn_run\n");
+    ret = rknn_run(app_ctx->rknn_ctx, nullptr);
+    if (ret < 0)
+    {
+        printf("rknn_run fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Get Output
+    memset(outputs, 0, sizeof(outputs));
+    for (int i = 0; i < app_ctx->io_num.n_output; i++)
+    {
+        outputs[i].index = i;
+        outputs[i].want_float = (!app_ctx->is_quant);
+    }
+    ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
+    if (ret < 0)
+    {
+        printf("rknn_outputs_get fail! ret=%d\n", ret);
+        goto out;
+    }
+
+
+    // Post Process
+    post_process_det(app_ctx, outputs, &letter_box, box_conf_threshold, nms_threshold, od_results);
+
+    // Remeber to release rknn output
+    rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
+
+out:
     return ret;
 }
 
@@ -277,6 +363,90 @@ out:
 }
 
 
+int inference_yolov8_obb_model_opencv(rknn_app_context_t* app_ctx, cv::Mat src_img, object_detect_obb_result_list* od_results)
+{
+    int ret;
+    cv::Mat dist_img;
+    letterbox_t letter_box;
+    rknn_input inputs[app_ctx->io_num.n_input];
+    rknn_output outputs[app_ctx->io_num.n_output];
+    const float nms_threshold = NMS_THRESH;      // Default NMS threshold
+    const float box_conf_threshold = BOX_THRESH; // Default box threshold
+    int bg_color = 114;
+
+    if ((!app_ctx) || (!od_results))
+    {
+        return -1;
+    }
+
+    memset(od_results, 0x00, sizeof(*od_results));
+    memset(&letter_box, 0, sizeof(letterbox_t));
+    memset(inputs, 0, sizeof(inputs));
+    memset(outputs, 0, sizeof(outputs));
+
+    // Pre Process
+    ret = convert_image_with_letterbox_opencv(app_ctx, src_img, dist_img, &letter_box);
+    if (ret < 0)
+    {
+        printf("convert_image_with_letterbox_opencv fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Set Input Data
+    inputs[0].index = 0;
+    inputs[0].type = RKNN_TENSOR_UINT8;
+    inputs[0].fmt = RKNN_TENSOR_NHWC;
+    inputs[0].size = dist_img.cols * dist_img.rows * dist_img.channels();
+    inputs[0].buf = dist_img.data;
+
+    ret = rknn_inputs_set(app_ctx->rknn_ctx, app_ctx->io_num.n_input, inputs);
+    if (ret < 0)
+    {
+        printf("rknn_inputs_set fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Run
+    printf("rknn_run\n");
+    int start_us, end_us;
+    start_us = getCurrentTimeUs();
+    ret = rknn_run(app_ctx->rknn_ctx, nullptr);
+    end_us = getCurrentTimeUs() - start_us;
+    printf("rknn_run time=%.2fms, FPS = %.2f\n", end_us / 1000.f, 1000.f * 1000.f / end_us);
+
+    if (ret < 0)
+    {
+        printf("rknn_run fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Get Output
+    memset(outputs, 0, sizeof(outputs));
+    for (int i = 0; i < app_ctx->io_num.n_output; i++)
+    {
+        outputs[i].index = i;
+        outputs[i].want_float = (!app_ctx->is_quant);
+    }
+    ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
+    if (ret < 0)
+    {
+        printf("rknn_outputs_get fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Post Process
+    start_us = getCurrentTimeUs();
+    post_process_obb(app_ctx, outputs, &letter_box, box_conf_threshold, nms_threshold, od_results);
+    end_us = getCurrentTimeUs() - start_us;
+    printf("post_process time=%.2fms, FPS = %.2f\n", end_us / 1000.f, 1000.f * 1000.f / end_us);
+
+    // Release rknn output
+    rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
+
+    return ret;
+}
+
+
 int inference_yolov8_pose_model(rknn_app_context_t* app_ctx, image_buffer_t* img, object_detect_pose_result_list* od_results)
 {
     int ret;
@@ -378,12 +548,11 @@ out:
     return ret;
 }
 
-
-int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_detect_result_list* od_results, letterbox_t letter_box, float nms_threshold, float box_conf_threshold, bool enable_logger){
+int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_detect_result_list* od_results, letterbox_t letter_box, float nms_threshold, float box_conf_threshold, bool enable_logger) {
     int ret;
     rknn_input inputs[app_ctx->io_num.n_input];
     rknn_output outputs[app_ctx->io_num.n_output];
-    
+
 
     if ((!app_ctx) || !(image_buf) || (!od_results))
     {
@@ -394,8 +563,8 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     memset(od_results, 0x00, sizeof(*od_results));
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
-    
-    // æ¨¡å‹å¼€å§‹æ¨ç†æ—¶é—´æˆ³
+
+    // Ä£ĞÍ¿ªÊ¼ÍÆÀíÊ±¼ä´Á
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     inputs[0].index = 0;
@@ -428,7 +597,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     }
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
-    // æ¨ç†ç»“æŸæ—¶é—´
+    // ÍÆÀí½áÊøÊ±¼ä
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     if (ret < 0)
@@ -445,8 +614,8 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // è®¡ç®—æ—¶é—´
-    if (enable_logger){
+    // ¼ÆËãÊ±¼ä
+    if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
         auto postprocess_duration = std::chrono::duration<double, std::milli>(total_end_time - inference_end_time);
@@ -456,7 +625,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
             total_duration.count(), inference_duration.count(), postprocess_duration.count());
     }
 
-    out:
-    
+out:
+
     return ret;
 }
