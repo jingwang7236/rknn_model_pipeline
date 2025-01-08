@@ -24,6 +24,14 @@
 #define IMG_WIDTH 160
 #define READ_IMAGE_TYPE STBIR_RGB
 
+// 定义类别字典
+std::map<int, std::string> rec_ren_category_map = {
+    {0, "anbao"},
+    {1, "baojie"},
+    {2, "worker"},
+    {3, "yayun"},
+    {4, "ren"}
+};
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/

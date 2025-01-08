@@ -629,3 +629,81 @@ out:
 
     return ret;
 }
+
+int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, object_detect_pose_result_list* od_results, letterbox_t letter_box, 
+                                int class_num, int kpt_num, int result_num, float nms_threshold, float box_conf_threshold, bool enable_logger){
+    int ret;
+    rknn_input inputs[app_ctx->io_num.n_input];
+    rknn_output outputs[app_ctx->io_num.n_output];
+
+    if ((!app_ctx) || !(image_buf) || (!od_results)){
+        printf("ERROR: Input app_ctx/image_buffer/od_results is null!\n");
+        return -1;
+    }
+
+    memset(od_results, 0x00, sizeof(*od_results));
+    memset(inputs, 0, sizeof(inputs));
+    memset(outputs, 0, sizeof(outputs));
+
+    // 模型开始推理时间戳
+    auto total_start_time = std::chrono::high_resolution_clock::now();
+
+    // Set Input Data
+    inputs[0].index = 0;
+    inputs[0].type = RKNN_TENSOR_UINT8;
+    inputs[0].fmt = RKNN_TENSOR_NHWC;
+    inputs[0].size = app_ctx->model_width * app_ctx->model_height * app_ctx->model_channel;
+    inputs[0].buf = image_buf;
+
+    ret = rknn_inputs_set(app_ctx->rknn_ctx, app_ctx->io_num.n_input, inputs);
+    if (ret < 0){
+        printf("ERROR: rknn_input_set fail! ret=%d\n", ret);
+        return ret;
+    }
+
+    // Run
+    ret = rknn_run(app_ctx->rknn_ctx, nullptr);
+
+    if (ret < 0){
+        printf("ERROR: rknn_run fail! ret=%d\n", ret);
+        return ret;
+    }
+
+    // Get Output
+    memset(outputs, 0, sizeof(outputs));
+    for (int i = 0; i < app_ctx->io_num.n_output; i++){
+        outputs[i].index = i;
+        outputs[i].want_float = (!app_ctx->is_quant);
+    }
+    
+    ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
+    
+    if (ret < 0){
+        printf("ERROR: rknn_outputs_get fail! ret=%d\n", ret);
+        return ret;
+    }
+
+    // 推理结束时间
+    auto inference_end_time = std::chrono::high_resolution_clock::now();
+
+    // Post Process
+    // TODO: modify the number of keypoint
+    post_process_pose_hw(app_ctx, outputs, &letter_box, box_conf_threshold, nms_threshold, od_results, class_num, kpt_num, result_num);
+    // post_process_pose(app_ctx, outputs, &letter_box, box_conf_threshold, nms_threshold, od_results);
+    
+    // Remeber to release rknn output
+    rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
+
+    // 计算时间
+    if (enable_logger){
+        auto total_end_time = std::chrono::high_resolution_clock::now();
+        auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
+        auto postprocess_duration = std::chrono::duration<double, std::milli>(total_end_time - inference_end_time);
+        auto total_duration = std::chrono::duration<double, std::milli>(total_end_time - total_start_time);
+
+        printf("INFO: total infer time %.2f ms: model time is %.2f ms and postprocess time is %.2fms\n",
+            total_duration.count(), inference_duration.count(), postprocess_duration.count());
+    }
+
+    return ret;
+}

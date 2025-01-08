@@ -44,11 +44,6 @@ std::map<int, std::string> det_hand_category_map = {
  * 返回：
  * - object_detect_result_list: 包含检测结果的结构。
  */
-object_detect_result_list inference_det_hand_model(
-    rknn_app_context_t *app_ctx,
-    det_model_input input_data,
-    bool det_by_square,
-    bool enable_logger);
 
 object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool det_by_square, bool enable_logger) {
     object_detect_result_list od_results;

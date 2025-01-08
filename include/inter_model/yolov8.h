@@ -26,5 +26,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
                         float nms_threshold = NMS_THRESH, float box_conf_threshold = BOX_THRESH, bool enable_logger=true);
 int inference_yolov8_obb_model(rknn_app_context_t* app_ctx, image_buffer_t* img, object_detect_obb_result_list* od_results);
 int inference_yolov8_pose_model(rknn_app_context_t* app_ctx, image_buffer_t* img, object_detect_pose_result_list* od_results);
-
+int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, object_detect_pose_result_list* od_results, letterbox_t letter_box, 
+                                int class_num, int kpt_num, int result_num, float nms_threshold, float box_conf_threshold, bool enable_logger);
+                        
 #endif //_RKNN_DEMO_YOLOV8_H_
