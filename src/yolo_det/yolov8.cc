@@ -740,8 +740,6 @@ int inference_yolov8_obb_model(
     // 模型开始推理时间戳
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
-    std::cout << 1 << std::endl;
-
     inputs[0].index = 0;
     inputs[0].type = RKNN_TENSOR_UINT8;
     inputs[0].fmt = RKNN_TENSOR_NHWC;
@@ -755,7 +753,6 @@ int inference_yolov8_obb_model(
         return -1;
     }
 
-    std::cout << 2 << std::endl;
     // Run
     ret = rknn_run(app_ctx->rknn_ctx, nullptr);
     if (ret < 0)
@@ -764,7 +761,6 @@ int inference_yolov8_obb_model(
         return -1;
     }
 
-    std::cout << 3 << std::endl;
     // Get Output
     memset(outputs, 0, sizeof(outputs));
     for (int i = 0; i < app_ctx->io_num.n_output; i++)
@@ -774,7 +770,6 @@ int inference_yolov8_obb_model(
     }
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
-    std::cout << 4 << std::endl;
     // 推理结束时间
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
@@ -786,7 +781,6 @@ int inference_yolov8_obb_model(
 
     // Post Process
     post_process_obb_hw(app_ctx, outputs, &letter_box, box_conf_threshold, nms_threshold, od_results, class_num);
-    std::cout << 5 << std::endl;
     // dump_tensor_attr(od_results);
 
     // Remeber to release rknn output
@@ -802,7 +796,7 @@ int inference_yolov8_obb_model(
         printf("INFO: total infer time %.2f ms: model time is %.2f ms and postprocess time is %.2fms\n",
             total_duration.count(), inference_duration.count(), postprocess_duration.count());
     }
-    std::cout << 6 << std::endl;
+ 
 out:
 
     return ret;
