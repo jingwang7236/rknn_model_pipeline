@@ -1,4 +1,4 @@
-ï»¿// Copyright (c) 2023 by Rockchip Electronics Co., Ltd. All Rights Reserved.
+// Copyright (c) 2023 by Rockchip Electronics Co., Ltd. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -48,30 +48,30 @@ static void dump_tensor_attr(rknn_tensor_attr* attr)
 
 static int convert_image_with_letterbox_opencv(rknn_app_context_t* app_ctx, const cv::Mat& orig_img, cv::Mat& dist_img, letterbox_t* letter_box)
 {
-    // ï¿½ï¿½È¡Ô­Ê¼Í¼ï¿½ï¿½Ä¿ï¿½ï¿½ÈºÍ¸ß¶ï¿½
+    // ???????????????
     int originalWidth = orig_img.cols;
     int originalHeight = orig_img.rows;
-    // ï¿½ï¿½È¡Ä¿ï¿½ï¿½Í¼ï¿½ï¿½Ä¿ï¿½ï¿½ÈºÍ¸ß¶ï¿½
+    // ????????????????
     int targetWidth = app_ctx->model_width;
     int targetHeight = app_ctx->model_height;
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å±ï¿½ï¿½ï¿½
+    // ???????????
     float widthScale = (float)targetWidth / originalWidth;
     float heightScale = (float)targetHeight / originalHeight;
     float scale = (widthScale < heightScale) ? widthScale : heightScale;
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ÂµÄ¿ï¿½ï¿½ÈºÍ¸ß¶ï¿½
+    // ?????????????
     int newWidth = (int)(originalWidth * scale);
     int newHeight = (int)(originalHeight * scale);
 
     cv::Mat resize_img;
     cv::resize(orig_img, resize_img, cv::Size(newWidth, newHeight));
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-    int left_pad = (targetWidth - newWidth) / 2;  // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼
+    // ???????????????
+    int left_pad = (targetWidth - newWidth) / 2;  // ???????
     int right_pad = targetWidth - newWidth - left_pad;
     int top_pad = (targetHeight - newHeight) / 2;
     int bottom_pad = targetHeight - newHeight - top_pad;
 
-    // ï¿½ï¿½ï¿½Í¼ï¿½ï¿½
+    // ??????
     cv::copyMakeBorder(resize_img, dist_img, top_pad, bottom_pad, left_pad, right_pad, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
 
     cv::imwrite("input_scale.png", dist_img);
@@ -92,8 +92,8 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, image_buffer_t* img, obj
     rknn_input inputs[app_ctx->io_num.n_input];
     rknn_output outputs[app_ctx->io_num.n_output];
 
-    const float nms_threshold = NMS_THRESH;      // Ä¬ï¿½Ïµï¿½NMSï¿½ï¿½Öµ
-    const float box_conf_threshold = BOX_THRESH; // Ä¬ï¿½Ïµï¿½ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½Öµ
+    const float nms_threshold = NMS_THRESH;      // ????NMS???
+    const float box_conf_threshold = BOX_THRESH; // ????????????
 
     int bg_color = 114;
 
@@ -189,8 +189,8 @@ int inference_yolov8_model_opencv(rknn_app_context_t* app_ctx, cv::Mat src_img, 
     letterbox_t letter_box;
     rknn_input inputs[app_ctx->io_num.n_input];
     rknn_output outputs[app_ctx->io_num.n_output];
-    const float nms_threshold = NMS_THRESH;      // Ä¬ï¿½Ïµï¿½NMSï¿½ï¿½Öµ
-    const float box_conf_threshold = BOX_THRESH; // Ä¬ï¿½Ïµï¿½ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½Öµ
+    const float nms_threshold = NMS_THRESH;      // ????NMS???
+    const float box_conf_threshold = BOX_THRESH; // ????????????
     int bg_color = 114;
 
     if ((!app_ctx) || (!od_results))
@@ -564,7 +564,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // Ä£ï¿½Í¿ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
+    // ?????????????
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     inputs[0].index = 0;
@@ -597,7 +597,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     }
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
-    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+    // ???????????
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     if (ret < 0)
@@ -614,7 +614,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+    // ???????
     if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
@@ -646,7 +646,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // æ¨¡å‹å¼€å§‹æ¨ç†æ—¶é—´æˆ³
+    // Ä£ĞÍ¿ªÊ¼ÍÆÀíÊ±¼ä´Á
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     inputs[0].index = 0;
@@ -679,7 +679,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     }
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
-    // æ¨ç†ç»“æŸæ—¶é—´
+    // ÍÆÀí½áÊøÊ±¼ä
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     if (ret < 0)
@@ -696,7 +696,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // è®¡ç®—æ—¶é—´
+    // ¼ÆËãÊ±¼ä
     if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
@@ -737,7 +737,7 @@ int inference_yolov8_obb_model(
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // æ¨¡å‹å¼€å§‹æ¨ç†æ—¶é—´æˆ³
+    // Ä£ĞÍ¿ªÊ¼ÍÆÀíÊ±¼ä´Á
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     std::cout << 1 << std::endl;
@@ -775,7 +775,7 @@ int inference_yolov8_obb_model(
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
     std::cout << 4 << std::endl;
-    // æ¨ç†ç»“æŸæ—¶é—´
+    // ÍÆÀí½áÊøÊ±¼ä
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     if (ret < 0)
@@ -792,7 +792,7 @@ int inference_yolov8_obb_model(
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // è®¡ç®—æ—¶é—´
+    // ¼ÆËãÊ±¼ä
     if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
@@ -823,7 +823,7 @@ int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, ob
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // æ¨¡å‹å¼€å§‹æ¨ç†æ—¶é—´æˆ³
+    // Ä£ĞÍ¿ªÊ¼ÍÆÀíÊ±¼ä´Á
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     // Set Input Data
@@ -861,7 +861,7 @@ int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, ob
         return ret;
     }
 
-    // æ¨ç†ç»“æŸæ—¶é—´
+    // ÍÆÀí½áÊøÊ±¼ä
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     // Post Process
@@ -872,7 +872,7 @@ int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, ob
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // è®¡ç®—æ—¶é—´
+    // ¼ÆËãÊ±¼ä
     if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);

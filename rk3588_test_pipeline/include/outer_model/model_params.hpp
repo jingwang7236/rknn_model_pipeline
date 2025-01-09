@@ -3,6 +3,8 @@
 
 #include "common.h"
 #include <map>
+#include <memory>
+
 
 // #define MODEL_OK 0      // 模型推理成功
 // #define MODEL_ERR 1     // 模型推理失败
@@ -23,23 +25,23 @@ typedef struct box_rect {
 
 // 记录检测模型的结果，包括Box和对应cls和分数
 typedef struct det_object_t {
-    int cls;
-    box_rect box;
+    int cls;     
+    box_rect box;  
     float score;
 } det_object_t;
 
-typedef struct ssd_det_result {
+typedef struct ssd_det_result{
     int count;
     det_object_t object[OBJ_MAX_NUM];
 } ssd_det_result;
 
 
 //算法输入数据格式
-typedef struct det_model_input {
+typedef struct det_model_input{
     int width;
     int height;
     int channel;
-    unsigned char* data;
+    unsigned char *data;
 } det_model_input;
 
 
@@ -49,13 +51,13 @@ typedef struct ponit_t {
 } ponit_t;  // add
 
 typedef struct retinaface_object_t {
-    int cls;
-    box_rect box;
-    float score;
+    int cls;       
+    box_rect box;  
+    float score;      
     ponit_t ponit[5];
 } retinaface_object_t;
 
-typedef struct retinaface_result {
+typedef struct retinaface_result{
     int count;
     retinaface_object_t object[OBJ_MAX_NUM];
 } retinaface_result;  // 比较ssd_det_result多了一个point
@@ -123,11 +125,11 @@ typedef struct {
 
 
 //算法输入数据格式
-typedef struct rec_model_input {
+typedef struct rec_model_input{
     int width;
     int height;
     int channel;
-    unsigned char* data;
+    unsigned char *data;
 } rec_model_input;
 
 // ResNet
@@ -146,7 +148,11 @@ typedef struct model_inference_params {
     float box_threshold;
 }model_inference_params;
 
-
+typedef struct cls_model_inference_params {
+    int top_k;
+    int img_height;
+    int img_width;
+}cls_model_inference_params;
 
 /* model classes */
 
@@ -154,5 +160,21 @@ extern std::map<int, std::string> det_gun_category_map; /* {0, "gun"} */
 extern std::map<int, std::string> det_knife_category_map; /* {0, "knife"} */
 extern std::map<int, std::string> det_stat_door_category_map; /* {0, "closed"},{1, "open"} */
 extern std::map<int, std::string> obb_stick_category_map; /* {0, "stick"} */
-extern std::map<int, std::string> cls_stat_door_category_map; /* {0, "closed"},{1, "open"},{2, "other"}  not door object */
+extern std::map<int, std::string> cls_stat_door_category_map; /* {0, "closed"},{1, "open"},{2, "other"}  not door object */ 
+
+/*-------------------------------------------
+            YOLO common start
+-------------------------------------------*/
+enum YoloModelType {
+    UNKNOWN = 0,
+    DETECTION = 1,
+    OBB = 2,
+    POSE = 3,
+    V10_DETECTION = 4,
+};
+
+/*-------------------------------------------
+            YOLO common end
+-------------------------------------------*/
+
 #endif //_RKNN_DET_CLS_H_

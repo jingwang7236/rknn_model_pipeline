@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include <map>
+#include <memory>
 
 
 // #define MODEL_OK 0      // 模型推理成功
@@ -160,4 +161,20 @@ extern std::map<int, std::string> det_knife_category_map; /* {0, "knife"} */
 extern std::map<int, std::string> det_stat_door_category_map; /* {0, "closed"},{1, "open"} */
 extern std::map<int, std::string> obb_stick_category_map; /* {0, "stick"} */
 extern std::map<int, std::string> cls_stat_door_category_map; /* {0, "closed"},{1, "open"},{2, "other"}  not door object */ 
+
+/*-------------------------------------------
+            YOLO common start
+-------------------------------------------*/
+enum YoloModelType {
+    UNKNOWN = 0,
+    DETECTION = 1,
+    OBB = 2,
+    POSE = 3,
+    V10_DETECTION = 4,
+};
+
+/*-------------------------------------------
+            YOLO common end
+-------------------------------------------*/
+
 #endif //_RKNN_DET_CLS_H_
