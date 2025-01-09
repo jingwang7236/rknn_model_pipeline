@@ -399,6 +399,23 @@ int main(int argc, char **argv) {
             return -1;
         }
 
+        object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
+        ret = release_model(&rec_rknn_app_ctx);
+    }
+    else if (std::string(model_name) == "obb_stick") {
+
+        /* 推理参数 width height nms_ths box_ths*/
+        model_inference_params params_det_gun = { 1024,1024,0.6f,0.25f };
+        rknn_app_context_t rknn_app_ctx;
+        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+        const char* model_path = "../model/jhpoc_1206-test1_obb_stick_1024_i8.rknn";
+        ret = init_model(model_path, &rknn_app_ctx);
+        if (ret != 0)
+        {
+            printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
+            return -1;
+        }
+
         rknn_app_ctx.is_quant = true;
 
         //print_rknn_app_context(rknn_app_ctx);
