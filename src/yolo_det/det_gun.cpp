@@ -67,9 +67,8 @@ object_detect_result_list inference_det_gun_model(rknn_app_context_t* app_ctx, d
         }
         ImagePreProcess det_gun_image_preprocess(input_data.width, input_data.height, params_.input_width, params_.input_height);
         auto convert_img = det_gun_image_preprocess.Convert(convertDataToCvMat(input_data));
-        // cv::Mat img_rgb = cv::Mat::zeros(INPUT_WIDTH_DET_HAND, INPUT_HEIGHT_DET_HAND, convert_img->type());
-        // convert_img->copyTo(img_rgb);
-        ret = inference_yolov8_model(app_ctx, convert_img->ptr<unsigned char>(), &od_results, det_gun_image_preprocess.get_letter_box(), params_.nms_threshold, params_.box_threshold, enable_logger);
+        
+        ret = inference_yolov8_model(app_ctx, convert_img->ptr<unsigned char>(), &od_results, det_gun_image_preprocess.get_letter_box(), det_gun_category_map.size(), params_.nms_threshold, params_.box_threshold, enable_logger);
     }
 
     if (ret != 0) {

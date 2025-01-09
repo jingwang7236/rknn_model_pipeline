@@ -4,6 +4,7 @@
 #include "common.h"
 #include <map>
 
+
 // #define MODEL_OK 0      // 模型推理成功
 // #define MODEL_ERR 1     // 模型推理失败
 // #define INPUT_ERR 2  // 模型输入参数错误
@@ -146,7 +147,11 @@ typedef struct model_inference_params {
     float box_threshold;
 }model_inference_params;
 
-
+typedef struct cls_model_inference_params {
+    int top_k;
+    int img_height;
+    int img_width;
+}cls_model_inference_params;
 
 /* model classes */
 

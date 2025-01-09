@@ -44,6 +44,9 @@ struct DetectionResult {
     std::vector<int> classes;
 };
 
+
+// 将XYWH转换为AABB
+image_rect_t convertObbToAabb(const image_obb_box_t& obb);
 // 从 input.data 获取图片的 cv::Mat 格式
 cv::Mat convertDataToCvMat(const det_model_input& input);
 
@@ -59,7 +62,10 @@ float calculateIoU(const image_rect_t &box1, const image_rect_t &box2);
 // 多个裁剪的nms
 std::vector<int> crop_nms_with_classes(const std::vector<image_rect_t> &bboxes, const std::vector<float> &confidences, 
                                        const std::vector<int> &classes, float iou_threshold);
-
+std::vector<int> crop_nms_with_classes(const std::vector<image_obb_box_t>& bboxes, const std::vector<float>& confidences,
+    const std::vector<int>& classes, float iou_threshold);
 // 正方形检测的处理完整流程
 int processDetBySquare(rknn_app_context_t *app_ctx, object_detect_result_list *od_results, det_model_input input_data,
                         int input_width, int input_height, float nms_thresh, float box_thresh, bool enable_logger);
+int processDetBySquareObb(rknn_app_context_t* app_ctx, object_detect_obb_result_list* od_results, det_model_input input_data,
+    int input_width, int input_height, float nms_thresh, float box_thresh, bool enable_logger);
