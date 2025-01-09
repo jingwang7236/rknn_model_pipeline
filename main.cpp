@@ -355,36 +355,36 @@ int main(int argc, char **argv) {
         // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
-    //else if(std::string(model_name) == "pose_kx_hp"){
-    //    // 分类初始化
-    //    const char* model_path = "model/pose_kx_hp_s_24_12_12.rknn";
-    //    rknn_app_context_t rec_rknn_app_ctx;
-    //    memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-    //    ret = init_model(model_path, &rec_rknn_app_ctx);  
-    //    
-    //    if (ret != 0){
-    //        printf("init pose_kx_hp model fail! ret=%d model_path=%s\n", ret, model_path);
-    //        return -1;
-    //    }
+    else if(std::string(model_name) == "pose_kx_hp"){
+       // 分类初始化
+       const char* model_path = "model/pose_kx_hp_s_24_12_12.rknn";
+       rknn_app_context_t rec_rknn_app_ctx;
+       memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+       ret = init_model(model_path, &rec_rknn_app_ctx);  
+       
+       if (ret != 0){
+           printf("init pose_kx_hp model fail! ret=%d model_path=%s\n", ret, model_path);
+           return -1;
+       }
 
-    //    object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&rec_rknn_app_ctx, input_data, false);
-    //    ret = release_model(&rec_rknn_app_ctx);
-    //}
-    //else if(std::string(model_name) == "pose_kx_sz"){
-    //    // 分类初始化
-    //    const char* model_path = "model/pose_kx_sz_s_24_12_07.rknn";
-    //    rknn_app_context_t rec_rknn_app_ctx;
-    //    memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-    //    ret = init_model(model_path, &rec_rknn_app_ctx);  
-    //    
-    //    if (ret != 0){
-    //        printf("init pose_kx_sz model fail! ret=%d model_path=%s\n", ret, model_path);
-    //        return -1;
-    //    }
+       object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&rec_rknn_app_ctx, input_data, false);
+       ret = release_model(&rec_rknn_app_ctx);
+    }
+    else if(std::string(model_name) == "pose_kx_sz"){
+       // 分类初始化
+       const char* model_path = "model/pose_kx_sz_s_24_12_07.rknn";
+       rknn_app_context_t rec_rknn_app_ctx;
+       memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+       ret = init_model(model_path, &rec_rknn_app_ctx);  
+       
+       if (ret != 0){
+           printf("init pose_kx_sz model fail! ret=%d model_path=%s\n", ret, model_path);
+           return -1;
+       }
 
-    //    object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
-    //    ret = release_model(&rec_rknn_app_ctx);
-    //}
+       object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
+       ret = release_model(&rec_rknn_app_ctx);
+    }
     else if (std::string(model_name) == "obb_stick") {
 
         /* 推理参数 width height nms_ths box_ths*/
@@ -399,8 +399,8 @@ int main(int argc, char **argv) {
             return -1;
         }
 
-        object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
-        ret = release_model(&rec_rknn_app_ctx);
+        object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rknn_app_ctx, input_data, false);
+        ret = release_model(&rknn_app_ctx);
     }
     else if (std::string(model_name) == "obb_stick") {
 
