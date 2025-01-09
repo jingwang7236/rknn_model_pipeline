@@ -1,5 +1,6 @@
 #include "yolo_image_preprocess.h"
 
+
 // 传入目标边长的 pad resize
 ImagePreProcess::ImagePreProcess(int width, int height, int target_size): target_width_(target_size), target_height_(target_size) {
     scale_ = static_cast<double>(target_size) / std::max(height, width);
@@ -71,6 +72,38 @@ cv::Mat convertDataToCvMat(const det_model_input& input) {
     // 如果是 1 或 3 通道，直接返回
     return img;
 }
+
+
+image_rect_t convertObbToAabb(const image_obb_box_t& obb) {
+    // 计算角度的弧度值
+    float angle_rad = obb.angle * M_PI / 180.0f;
+
+    // 计算旋转矩形的四个角点
+    float cos_angle = cos(angle_rad);
+    float sin_angle = sin(angle_rad);
+
+    // 计算四个角点的位置
+    float half_w = obb.w / 2.0f;
+    float half_h = obb.h / 2.0f;
+
+    // 角点坐标，按照顺时针方向计算
+    std::vector<std::pair<float, float>> corners = {
+        {obb.x + cos_angle * half_w - sin_angle * half_h, obb.y + sin_angle * half_w + cos_angle * half_h},
+        {obb.x - cos_angle * half_w - sin_angle * half_h, obb.y - sin_angle * half_w + cos_angle * half_h},
+        {obb.x - cos_angle * half_w + sin_angle * half_h, obb.y - sin_angle * half_w - cos_angle * half_h},
+        {obb.x + cos_angle * half_w + sin_angle * half_h, obb.y + sin_angle * half_w - cos_angle * half_h}
+    };
+
+    // 获取 AABB（最小矩形）
+    float min_x = std::min({ corners[0].first, corners[1].first, corners[2].first, corners[3].first });
+    float max_x = std::max({ corners[0].first, corners[1].first, corners[2].first, corners[3].first });
+    float min_y = std::min({ corners[0].second, corners[1].second, corners[2].second, corners[3].second });
+    float max_y = std::max({ corners[0].second, corners[1].second, corners[2].second, corners[3].second });
+
+    // 返回 AABB
+    return image_rect_t{ static_cast<int>(min_x), static_cast<int>(min_y), static_cast<int>(max_x), static_cast<int>(max_y) };
+}
+
 
 // 将图片裁剪成一组正方形块
 std::vector<CropInfo> cropImage(const cv::Mat &image) {
@@ -196,6 +229,64 @@ std::vector<int> crop_nms_with_classes(const std::vector<image_rect_t> &bboxes,
 }
 
 
+std::vector<int> crop_nms_with_classes(const std::vector<image_obb_box_t>& bboxes,
+    const std::vector<float>& confidences,
+    const std::vector<int>& classes,
+    float iou_threshold) {
+    // 检查输入有效性
+    if (bboxes.empty() || confidences.empty() || classes.empty() ||
+        bboxes.size() != confidences.size() || bboxes.size() != classes.size()) {
+        return {};
+    }
+
+    // 保存最终保留的索引
+    std::vector<int> keep;
+
+    // 获取所有类别的集合
+    std::set<int> unique_classes(classes.begin(), classes.end());
+
+    // 对每个类别分别进行 NMS
+    for (int cls : unique_classes) {
+        // 保存属于该类别的索引
+        std::vector<int> cls_indices;
+        for (size_t i = 0; i < classes.size(); ++i) {
+            if (classes[i] == cls) {
+                cls_indices.push_back(i);
+            }
+        }
+
+        // 按照置信度对属于该类别的框排序
+        std::sort(cls_indices.begin(), cls_indices.end(), [&confidences](int i, int j) {
+            return confidences[i] > confidences[j];
+        });
+
+        // 执行 NMS
+        while (!cls_indices.empty()) {
+            int current = cls_indices.front(); // 取出置信度最高的框
+            keep.push_back(current);          // 保留该框
+            cls_indices.erase(cls_indices.begin()); // 从索引列表中移除
+
+            // 将旋转矩形 (OBB) 转换为 AABB
+            image_rect_t aabb_current = convertObbToAabb(bboxes[current]);
+
+            // 筛选与当前框 IoU 小于阈值的框
+            cls_indices.erase(
+                std::remove_if(cls_indices.begin(), cls_indices.end(), [&](int idx) {
+                // 将旋转矩形 (OBB) 转换为 AABB
+                image_rect_t aabb_idx = convertObbToAabb(bboxes[idx]);
+
+                // 计算 AABB 的 IoU
+                float iou = calculateIoU(aabb_current, aabb_idx);
+                return iou > iou_threshold; // 移除 IoU 大于阈值的框
+            }),
+                cls_indices.end());
+        }
+    }
+
+    return keep; // 返回所有保留的框的索引
+}
+
+
 int processDetBySquare(rknn_app_context_t *app_ctx, object_detect_result_list *od_results, det_model_input input_data,
                         int input_width, int input_height, float nms_thresh, float box_thresh, bool enable_logger) {
     // det_model_input 转 cv::Mat
@@ -251,6 +342,74 @@ int processDetBySquare(rknn_app_context_t *app_ctx, object_detect_result_list *o
         }
 
         auto &result = od_results->results[od_results->count++];
+        result.box = all_bboxes[idx];
+        result.prop = all_confidences[idx];
+        result.cls_id = all_classes[idx];
+    }
+
+    od_results->id = 1; // 设置检测任务 ID
+
+    return 0;
+}
+
+int processDetBySquareObb(rknn_app_context_t* app_ctx, object_detect_obb_result_list* od_results, det_model_input input_data,
+    int input_width, int input_height, float nms_thresh, float box_thresh, bool enable_logger) {
+    // det_model_input 转 cv::Mat
+    cv::Mat image = convertDataToCvMat(input_data);
+
+    // 裁剪图片
+    std::vector<CropInfo> cropped_images = cropImage(image);
+
+    // 用于保存结果
+    std::vector<image_obb_box_t> all_bboxes;
+    std::vector<float> all_confidences;
+    std::vector<int> all_classes;
+
+    // 实例化填充对象，实际上只需resize，不需要填充
+    ImagePreProcess det_image_preprocess(cropped_images[0].cropped_img.cols, cropped_images[0].cropped_img.rows, input_width, input_height);
+
+    for (const auto& crop_info : cropped_images) {
+        // 推理前处理
+        auto convert_img = det_image_preprocess.Convert(crop_info.cropped_img);     // 使用智能指针解引用 convert_img->ptr<unsigned char>()
+        // cv::Mat img_rgb = cv::Mat::zeros(input_width, input_height, convert_img->type());
+        // convert_img->copyTo(img_rgb);    // img_rgb->ptr()
+
+        // 执行推理
+        object_detect_obb_result_list temp_results;
+        int ret = inference_yolov8_obb_model(app_ctx, convert_img->ptr<unsigned char>(), &temp_results, det_image_preprocess.get_letter_box(),1, nms_thresh, box_thresh, enable_logger);
+        if (ret != 0) {
+            printf("ERROR: Inference failed for one block, ret=%d\n", ret);
+            return -1;
+        }
+
+        // 偏移检测框并整合结果
+        for (int i = 0; i < temp_results.count; ++i) {
+            auto& tmp_res = temp_results.results[i];
+            
+            // 处理旋转框的偏移
+            image_obb_box_t obb = tmp_res.box;
+            obb.x += crop_info.x_start;  // 偏移中心点 x
+            obb.y += crop_info.y_start;  // 偏移中心点 y
+
+            // 将调整后的 OBB 存储到 all_bboxes 中
+            all_bboxes.push_back(obb);
+            all_confidences.push_back(tmp_res.prop);
+            all_classes.push_back(tmp_res.cls_id);
+        }
+    }
+
+    memset(od_results, 0, sizeof(object_detect_obb_result_list));
+
+    // 应用 NMS 过滤重叠框
+    std::vector<int> final_indices = crop_nms_with_classes(all_bboxes, all_confidences, all_classes, box_thresh);
+
+    // 将保留的框添加到最终结果中
+    for (int idx : final_indices) {
+        if (od_results->count >= OBJ_NUMB_MAX_SIZE) {
+            break; // 防止超出结果数组大小
+        }
+
+        auto& result = od_results->results[od_results->count++];
         result.box = all_bboxes[idx];
         result.prop = all_confidences[idx];
         result.cls_id = all_classes[idx];

@@ -1536,7 +1536,7 @@ int post_process_obb_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t*
     int grid_w = 0;
     int model_in_w = app_ctx->model_width;
     int model_in_h = app_ctx->model_height;
-    memset(od_results, 0, sizeof(object_detect_result_list));
+    memset(od_results, 0, sizeof(object_detect_obb_result_list));
     int index = 0;
 
 
@@ -1557,6 +1557,8 @@ int post_process_obb_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t*
         index += grid_h * grid_w;
     }
 
+
+    std::cout << "process_i8_obb_hw" << std::endl;
     // no object detect
     if (validCount <= 0) {
         return 0;
@@ -1567,11 +1569,14 @@ int post_process_obb_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t*
     }
     quick_sort_indice_inverse_hw(objProbs, 0, validCount - 1, indexArray);
 
+    std::cout << "quick_sort_indice_inverse_hw" << std::endl;
     std::set<int> class_set(std::begin(classId), std::end(classId));
 
     for (auto c : class_set) {
         nms_obb_hw(validCount, filterBoxes, classId, indexArray, c, nms_threshold);
     }
+
+    std::cout << "nms_obb_hw" << std::endl;
 
     int last_count = 0;
     od_results->count = 0;

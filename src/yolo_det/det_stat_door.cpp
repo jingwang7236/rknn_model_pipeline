@@ -70,7 +70,7 @@ object_detect_result_list inference_det_stat_door_model(rknn_app_context_t* app_
         }
         ImagePreProcess image_preprocess(input_data.width, input_data.height, params_.input_width, params_.input_height);
         auto convert_img = image_preprocess.Convert(convertDataToCvMat(input_data));
-        ret = inference_yolov8_model(app_ctx, convert_img->ptr<unsigned char>(), &od_results, image_preprocess.get_letter_box(), params_.nms_threshold, params_.box_threshold, enable_logger);
+        ret = inference_yolov8_model(app_ctx, convert_img->ptr<unsigned char>(), &od_results, image_preprocess.get_letter_box(), det_stat_door_category_map.size(), params_.nms_threshold, params_.box_threshold, enable_logger);
     }
 
     if (ret != 0) {
