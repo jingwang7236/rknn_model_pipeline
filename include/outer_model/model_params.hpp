@@ -62,7 +62,6 @@ typedef struct retinaface_result{
 } retinaface_result;  // 比较ssd_det_result多了一个point
 
 
-
 // classify model
 #define FACE_ATTR_NUM_CLASS 3
 #define FACE_ATTR_CLASS_1 3  // 0: negtive, 1: hat, 2: helmet
