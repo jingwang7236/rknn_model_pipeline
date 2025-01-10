@@ -24,7 +24,6 @@ file(GLOB_RECURSE HEADER
     ${CMAKE_SOURCE_DIR}/include/*.h*
     ${CMAKE_SOURCE_DIR}/third_party/*.h*
     )
-# file(GLOB_RECURSE SOURCE ${CMAKE_SOURCE_DIR}/src/*.cpp)
 file(GLOB_RECURSE SOURCE 
     ${CMAKE_SOURCE_DIR}/src/ssd_det/*.c*
     ${CMAKE_SOURCE_DIR}/src/yolo_det/*.c*
@@ -34,6 +33,7 @@ file(GLOB_RECURSE SOURCE
     ${CMAKE_SOURCE_DIR}/src/utils/*.c*
     ${CMAKE_SOURCE_DIR}/src/ppocr/*.c*
     ${CMAKE_SOURCE_DIR}/src/resnet18/*.c*
+    ${CMAKE_SOURCE_DIR}/src/tests/*.c*  # 测试模型指标,包含分类模型的准确率和检测模型的map/pr
     )
 message("HEADER: ${HEADER}")
 message("SOURCE: ${SOURCE}")

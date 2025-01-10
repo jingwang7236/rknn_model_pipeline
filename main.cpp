@@ -7,6 +7,10 @@
 // #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include <chrono>  // 计算耗时
+using namespace std::chrono; 
+
+
 void print_rknn_app_context(const rknn_app_context_t& ctx) {
     std::cout << "rknn_ctx: " << ctx.rknn_ctx << std::endl;
     std::cout << "model_channel: " << ctx.model_channel << std::endl;
@@ -26,7 +30,29 @@ int main(int argc, char **argv) {
     int ret;
 
     const char *model_name = argv[1];
-    const char *image_path = argv[2];
+    const char *image_path = argv[2];  // single image path or testset file path
+
+    // 计算模型准确率
+    if (std::string(model_name) == "test_face_attr"){ 
+        // 创建模型管理器并添加模型
+        ClsModelManager clsmodelManager;
+        clsmodelManager.addModel("FaceAttr", "model/FaceAttr.rknn", inference_face_attr_model); // 模型名、模型路径、推理函数
+        ret = ClsModelAccuracyCalculator(clsmodelManager, "FaceAttr", image_path);
+        return ret;
+    }else if (std::string(model_name) == "test_person_det"){
+        // 定义label_name和label_id的映射关系，传入函数
+        std::map<std::string, int> label_name_map = {
+            {"ren", 0},  // labelme标注工具：label_name和模型输出的label_id对应
+        };
+        float CONF_THRESHOLD = 0.5; // 计算某个阈值的PR
+        float NMS_THRESHOLD = 0.45; // 计算MAP
+        DetModelManager modelManager;
+        modelManager.addModel("PersonDet", "model/yolov10s.rknn", inference_person_det_model);
+        ret = DetModelMapCalculator(modelManager, "PersonDet", image_path, label_name_map, CONF_THRESHOLD, NMS_THRESHOLD);
+        return ret;
+    }
+
+    // 模型推理单张图像示例
     
     // Load image
     int width, height, channel;
@@ -103,37 +129,17 @@ int main(int argc, char **argv) {
            printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
            return -1;
        }
+       printf("inference_person_det_model start\n");
+       auto start = std::chrono::high_resolution_clock::now();
        object_detect_result_list result = inference_person_det_model(&rknn_app_ctx, input_data, true); //推理
+       auto end = std::chrono::high_resolution_clock::now();
+       printf("inference_person_det_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+       printf("inference_person_det_model end\n");
        ret = release_model(&rknn_app_ctx);
        if (ret != 0)
        {
            printf("release_yolov10_model fail! ret=%d\n", ret);
        }
-    }
-    else if (std::string(model_name) == "face_attr"){
-       // 检测初始化
-       const char* det_model_path = "model/HeaderDet.rknn";
-       rknn_app_context_t det_rknn_app_ctx;
-       memset(&det_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-       ret = init_model(det_model_path, &det_rknn_app_ctx);  
-       // 分类初始化
-       rknn_app_context_t cls_rknn_app_ctx;
-       memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-       const char* cls_model_path = "model/FaceAttr.rknn";
-       ret = init_model(cls_model_path, &cls_rknn_app_ctx);
-       ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
-       det_result.count = det_result.count;
-       for (int i = 0; i < det_result.count; ++i) {
-           box_rect header_box;  // header的box
-           header_box.left = std::max(det_result.object[i].box.left, 0);
-           header_box.top = std::max(det_result.object[i].box.top, 0);
-           header_box.right = std::min(det_result.object[i].box.right, width);
-           header_box.bottom = std::min(det_result.object[i].box.bottom, height);
-           // 人脸属性模型
-           face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
-       }
-       ret = release_model(&det_rknn_app_ctx);  //释放
-       ret = release_model(&cls_rknn_app_ctx);
     }
     else if (std::string(model_name) == "det_knife"){
         model_inference_params params_det_knife = { 640,640,0.6f,0.25f };
@@ -211,6 +217,7 @@ int main(int argc, char **argv) {
     }
     else if (std::string(model_name) == "face_attr"){
         // 检测初始化
+        printf("inference_face_attr_model start\n");
         const char* det_model_path = "model/HeaderDet.rknn";
         rknn_app_context_t det_rknn_app_ctx;
         memset(&det_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
@@ -220,7 +227,10 @@ int main(int argc, char **argv) {
         memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         const char* cls_model_path = "model/FaceAttr.rknn";
         ret = init_model(cls_model_path, &cls_rknn_app_ctx);
+        auto start = std::chrono::high_resolution_clock::now();
         ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
+        auto det_end = std::chrono::high_resolution_clock::now();
+        printf("inference_header_det_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(det_end - start).count() / 1000.0);
         det_result.count = det_result.count;
         for (int i = 0; i < det_result.count; ++i) {
             box_rect header_box;  // header的box
@@ -229,8 +239,14 @@ int main(int argc, char **argv) {
             header_box.right = std::min(det_result.object[i].box.right, width);
             header_box.bottom = std::min(det_result.object[i].box.bottom, height);
             // 人脸属性模型
-            face_attr_cls_object cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
+            auto cls_start = std::chrono::high_resolution_clock::now();
+            cls_model_result cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
+            auto cls_end = std::chrono::high_resolution_clock::now();
+            printf("single_face_attr_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(cls_end - cls_start).count() / 1000.0);
+
         }
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("inference_face_attr_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&det_rknn_app_ctx);  //释放
         ret = release_model(&cls_rknn_app_ctx);
     }
@@ -355,52 +371,35 @@ int main(int argc, char **argv) {
         // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
-    //else if(std::string(model_name) == "pose_kx_hp"){
-    //    // 分类初始化
-    //    const char* model_path = "model/pose_kx_hp_s_24_12_12.rknn";
-    //    rknn_app_context_t rec_rknn_app_ctx;
-    //    memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-    //    ret = init_model(model_path, &rec_rknn_app_ctx);  
-    //    
-    //    if (ret != 0){
-    //        printf("init pose_kx_hp model fail! ret=%d model_path=%s\n", ret, model_path);
-    //        return -1;
-    //    }
+    else if(std::string(model_name) == "pose_kx_hp"){
+       // 分类初始化
+       const char* model_path = "model/pose_kx_hp_s_24_12_12.rknn";
+       rknn_app_context_t rec_rknn_app_ctx;
+       memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+       ret = init_model(model_path, &rec_rknn_app_ctx);  
+       
+       if (ret != 0){
+           printf("init pose_kx_hp model fail! ret=%d model_path=%s\n", ret, model_path);
+           return -1;
+       }
 
-    //    object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&rec_rknn_app_ctx, input_data, false);
-    //    ret = release_model(&rec_rknn_app_ctx);
-    //}
-    //else if(std::string(model_name) == "pose_kx_sz"){
-    //    // 分类初始化
-    //    const char* model_path = "model/pose_kx_sz_s_24_12_07.rknn";
-    //    rknn_app_context_t rec_rknn_app_ctx;
-    //    memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-    //    ret = init_model(model_path, &rec_rknn_app_ctx);  
-    //    
-    //    if (ret != 0){
-    //        printf("init pose_kx_sz model fail! ret=%d model_path=%s\n", ret, model_path);
-    //        return -1;
-    //    }
+       object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&rec_rknn_app_ctx, input_data, false);
+       ret = release_model(&rec_rknn_app_ctx);
+    }
+    else if(std::string(model_name) == "pose_kx_sz"){
+       // 分类初始化
+       const char* model_path = "model/pose_kx_sz_s_24_12_07.rknn";
+       rknn_app_context_t rec_rknn_app_ctx;
+       memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+       ret = init_model(model_path, &rec_rknn_app_ctx);  
+       
+       if (ret != 0){
+           printf("init pose_kx_sz model fail! ret=%d model_path=%s\n", ret, model_path);
+           return -1;
+       }
 
-    //    object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
-    //    ret = release_model(&rec_rknn_app_ctx);
-    //}
-    else if (std::string(model_name) == "obb_stick") {
-
-        /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_det_gun = { 1024,1024,0.6f,0.25f };
-        rknn_app_context_t rknn_app_ctx;
-        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "../model/jhpoc_1206-test1_obb_stick_1024_i8.rknn";
-        ret = init_model(model_path, &rknn_app_ctx);
-        if (ret != 0)
-        {
-            printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
-            return -1;
-        }
-
-        object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
-        ret = release_model(&rec_rknn_app_ctx);
+       object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
+       ret = release_model(&rec_rknn_app_ctx);
     }
     else if (std::string(model_name) == "obb_stick") {
 
@@ -427,7 +426,6 @@ int main(int argc, char **argv) {
             printf("release_yolov8_model fail! ret=%d\n", ret);
         }
     }
-
     else if (std::string(model_name) == "rec_stat_door") {
         // 分类初始化
         const char* model_path = "../model/cls_stat_door_model_resnet18_150108_i8.rknn";
