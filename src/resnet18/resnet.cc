@@ -111,14 +111,14 @@ int init_resnet_model(const char* model_path, rknn_app_context_t* app_ctx)
     // Load RKNN Model
     model_len = read_data_from_file(model_path, &model);
     if (model == NULL) {
-        printf("load_model fail!\n");
+        printf("ERROR: load_model fail!\n");
         return -1;
     }
 
     ret = rknn_init(&ctx, model, model_len, 0, NULL);
     free(model);
     if (ret < 0) {
-        printf("rknn_init fail! ret=%d\n", ret);
+        printf("ERROR: rknn_init fail! ret=%d\n", ret);
         return -1;
     }
 
@@ -126,37 +126,37 @@ int init_resnet_model(const char* model_path, rknn_app_context_t* app_ctx)
     rknn_input_output_num io_num;
     ret = rknn_query(ctx, RKNN_QUERY_IN_OUT_NUM, &io_num, sizeof(io_num));
     if (ret != RKNN_SUCC) {
-        printf("rknn_query fail! ret=%d\n", ret);
+        printf("ERROR: rknn_query fail! ret=%d\n", ret);
         return -1;
     }
-    printf("model input num: %d, output num: %d\n", io_num.n_input, io_num.n_output);
+    // printf("INFO: model input num: %d, output num: %d\n", io_num.n_input, io_num.n_output);
 
     // Get Model Input Info
-    printf("input tensors:\n");
+    // printf("input tensors:\n");
     rknn_tensor_attr input_attrs[io_num.n_input];
     memset(input_attrs, 0, sizeof(input_attrs));
     for (int i = 0; i < io_num.n_input; i++) {
         input_attrs[i].index = i;
         ret = rknn_query(ctx, RKNN_QUERY_INPUT_ATTR, &(input_attrs[i]), sizeof(rknn_tensor_attr));
         if (ret != RKNN_SUCC) {
-            printf("rknn_query fail! ret=%d\n", ret);
+            printf("ERROR: rknn_query fail! ret=%d\n", ret);
             return -1;
         }
-        dump_tensor_attr(&(input_attrs[i]));
+        // dump_tensor_attr(&(input_attrs[i]));
     }
 
     // Get Model Output Info
-    printf("output tensors:\n");
+    // printf("output tensors:\n");
     rknn_tensor_attr output_attrs[io_num.n_output];
     memset(output_attrs, 0, sizeof(output_attrs));
     for (int i = 0; i < io_num.n_output; i++) {
         output_attrs[i].index = i;
         ret = rknn_query(ctx, RKNN_QUERY_OUTPUT_ATTR, &(output_attrs[i]), sizeof(rknn_tensor_attr));
         if (ret != RKNN_SUCC) {
-            printf("rknn_query fail! ret=%d\n", ret);
+            printf("ERROR: rknn_query fail! ret=%d\n", ret);
             return -1;
         }
-        dump_tensor_attr(&(output_attrs[i]));
+        // dump_tensor_attr(&(output_attrs[i]));
     }
 
     // Set to context
@@ -168,18 +168,18 @@ int init_resnet_model(const char* model_path, rknn_app_context_t* app_ctx)
     memcpy(app_ctx->output_attrs, output_attrs, io_num.n_output * sizeof(rknn_tensor_attr));
 
     if (input_attrs[0].fmt == RKNN_TENSOR_NCHW) {
-        printf("model is NCHW input fmt\n");
+        // printf("INFO: model is NCHW input fmt\n");
         app_ctx->model_channel = input_attrs[0].dims[1];
         app_ctx->model_height  = input_attrs[0].dims[2];
         app_ctx->model_width   = input_attrs[0].dims[3];
     } else {
-        printf("model is NHWC input fmt\n");
+        // printf("INFO: model is NHWC input fmt\n");
         app_ctx->model_height  = input_attrs[0].dims[1];
         app_ctx->model_width   = input_attrs[0].dims[2];
         app_ctx->model_channel = input_attrs[0].dims[3];
     }
-    printf("model input height=%d, width=%d, channel=%d\n",
-        app_ctx->model_height, app_ctx->model_width, app_ctx->model_channel);
+    // printf("INFO: model input height=%d, width=%d, channel=%d\n",
+    //     app_ctx->model_height, app_ctx->model_width, app_ctx->model_channel);
 
     return 0;
 }
@@ -220,14 +220,14 @@ int inference_resnet_model(rknn_app_context_t* app_ctx, image_buffer_t* src_img,
     img.size = get_image_size(&img);
     img.virt_addr = (unsigned char*)malloc(img.size);
     if (img.virt_addr == NULL) {
-        printf("malloc buffer size:%d fail!\n", img.size);
+        printf("ERROR: malloc buffer size:%d fail!\n", img.size);
         return -1;
     }
 
     //caution: might have bug!!
     ret = convert_image(src_img, &img, NULL, NULL, 0);
     if (ret < 0) {
-        printf("convert_image fail! ret=%d\n", ret);
+        printf("ERROR: convert_image fail! ret=%d\n", ret);
         return -1;
     }
 
@@ -240,15 +240,15 @@ int inference_resnet_model(rknn_app_context_t* app_ctx, image_buffer_t* src_img,
 
     ret = rknn_inputs_set(app_ctx->rknn_ctx, 1, inputs);
     if (ret < 0) {
-        printf("rknn_input_set fail! ret=%d\n", ret);
+        printf("ERROR: rknn_input_set fail! ret=%d\n", ret);
         return -1;
     }
 
     // Run
-    printf("rknn_run\n");
+    // printf("rknn_run\n");
     ret = rknn_run(app_ctx->rknn_ctx, nullptr);
     if (ret < 0) {
-        printf("rknn_run fail! ret=%d\n", ret);
+        printf("ERROR: rknn_run fail! ret=%d\n", ret);
         return -1;
     }
 
@@ -256,7 +256,7 @@ int inference_resnet_model(rknn_app_context_t* app_ctx, image_buffer_t* src_img,
     outputs[0].want_float = 1;
     ret = rknn_outputs_get(app_ctx->rknn_ctx, 1, outputs, NULL);
     if (ret < 0) {
-        printf("rknn_outputs_get fail! ret=%d\n", ret);
+        printf("ERROR: rknn_outputs_get fail! ret=%d\n", ret);
         goto out;
     }
 

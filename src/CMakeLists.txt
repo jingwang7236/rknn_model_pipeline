@@ -27,6 +27,7 @@ file(GLOB_RECURSE HEADER
 file(GLOB_RECURSE SOURCE 
     ${CMAKE_SOURCE_DIR}/src/ssd_det/*.c*
     ${CMAKE_SOURCE_DIR}/src/yolo_det/*.c*
+    ${CMAKE_SOURCE_DIR}/src/yolo_pose/*.c*
     ${CMAKE_SOURCE_DIR}/src/classify_model/*.c*
     ${CMAKE_SOURCE_DIR}/src/business_pipeline/*.c*  # 业务逻辑
     ${CMAKE_SOURCE_DIR}/src/utils/*.c*

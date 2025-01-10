@@ -2,6 +2,10 @@
 #define _RKNN_DET_CLS_H_
 
 #include "common.h"
+#include <map>
+#include <memory>
+
+
 // #define MODEL_OK 0      // 模型推理成功
 // #define MODEL_ERR 1     // 模型推理失败
 // #define INPUT_ERR 2  // 模型输入参数错误
@@ -133,5 +137,44 @@ typedef struct {
     int cls;
     float score;
 } resnet_result;
+
+
+
+/* inference params */
+typedef struct model_inference_params {
+    int input_width;
+    int input_height;
+    float nms_threshold;
+    float box_threshold;
+}model_inference_params;
+
+typedef struct cls_model_inference_params {
+    int top_k;
+    int img_height;
+    int img_width;
+}cls_model_inference_params;
+
+/* model classes */
+
+extern std::map<int, std::string> det_gun_category_map; /* {0, "gun"} */
+extern std::map<int, std::string> det_knife_category_map; /* {0, "knife"} */
+extern std::map<int, std::string> det_stat_door_category_map; /* {0, "closed"},{1, "open"} */
+extern std::map<int, std::string> obb_stick_category_map; /* {0, "stick"} */
+extern std::map<int, std::string> cls_stat_door_category_map; /* {0, "closed"},{1, "open"},{2, "other"}  not door object */ 
+
+/*-------------------------------------------
+            YOLO common start
+-------------------------------------------*/
+enum YoloModelType {
+    UNKNOWN = 0,
+    DETECTION = 1,
+    OBB = 2,
+    POSE = 3,
+    V10_DETECTION = 4,
+};
+
+/*-------------------------------------------
+            YOLO common end
+-------------------------------------------*/
 
 #endif //_RKNN_DET_CLS_H_
