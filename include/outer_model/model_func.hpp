@@ -1,6 +1,8 @@
 #ifndef _RKNN_DET_CLS_FUNC_H_
 #define _RKNN_DET_CLS_FUNC_H_
 
+#include <map>
+
 #include "model_params.hpp"
 #include "common.h"
 #include "ppocr_system.h"
@@ -14,7 +16,7 @@ ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model
 
 retinaface_result inference_face_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
-face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger);
+cls_model_result inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger);
 
 object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
@@ -65,5 +67,44 @@ object_detect_obb_result_list inference_obb_stick_model(rknn_app_context_t* app_
 /* rec status door */
 resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger);
 
+// 模型管理类
+class ClsModelManager{
+    public:
+        void addModel(const std::string& modelName, const std::string& modelPath, ClsInferenceFunction inferenceFunc) {
+            models[modelName] = {modelName, modelPath, inferenceFunc};
+        }
+
+        ClsModelInfo getModel(const std::string& modelName) {
+            if (models.find(modelName) != models.end()) {
+                return models[modelName];
+            } else {
+                throw std::runtime_error("Model not found");
+            }
+        }
+
+    private:
+        std::map<std::string, ClsModelInfo> models;
+};
+
+class DetModelManager{
+    public:
+        void addModel(const std::string& modelName, const std::string& modelPath, DetInferenceFunction inferenceFunc) {
+            models[modelName] = {modelName, modelPath, inferenceFunc};
+        }
+
+        DetModelInfo getModel(const std::string& modelName) {
+            if (models.find(modelName) != models.end()) {
+                return models[modelName];
+            } else {
+                throw std::runtime_error("Model not found");
+            }
+        }
+
+    private:
+        std::map<std::string, DetModelInfo> models;
+};
+
+int ClsModelAccuracyCalculator(ClsModelManager& modelManager, const std::string& modelName, const char *testset_file);
+int DetModelMapCalculator(DetModelManager& modelManager, const std::string& modelName, const char *testset_file, std::map<std::string, int> label_name_map, float CONF_THRESHOLD, float NMS_THRESHOLD);
 
 #endif // _RKNN_DET_CLS_FUNC_H_

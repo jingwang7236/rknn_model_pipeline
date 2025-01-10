@@ -1,6 +1,8 @@
 #ifndef _RKNN_DET_CLS_H_
 #define _RKNN_DET_CLS_H_
 
+#include <string>
+
 #include "common.h"
 #include <map>
 #include <memory>
@@ -13,6 +15,7 @@
 // #define MEM_ERR 4       // 内存申请失败
 
 #define OBJ_MAX_NUM 128
+#define CLASS_MAX_NUM 80  //分类模型最多类别
 
 // det model
 typedef struct box_rect {
@@ -63,17 +66,18 @@ typedef struct retinaface_result{
 } retinaface_result;  // 比较ssd_det_result多了一个point
 
 
-
 // classify model
-#define FACE_ATTR_NUM_CLASS 3
-#define FACE_ATTR_CLASS_1 3  // 0: negtive, 1: hat, 2: helmet
-#define FACE_ATTR_CLASS_2 2  // 0: negtive, 1: glassess
-#define FACE_ATTR_CLASS_3 2  // 0: negtive, 1: mask
-typedef struct face_attr_cls_object {
-    int num_class;
-    int cls_output[FACE_ATTR_NUM_CLASS];
-} face_attr_cls_object;  // 人脸属性输出结果
 
+enum FaceAttrModelClass {
+    FACE_ATTR_CLASS_1 = 3,
+    FACE_ATTR_CLASS_2 = 2,
+    FACE_ATTR_CLASS_3 = 2,
+};// 人脸属性多分类模型定义
+
+typedef struct cls_model_result {
+    int num_class;
+    int cls_output[CLASS_MAX_NUM];
+} cls_model_result;  // 分类模型输出结果
 
 // yolo det model
 
@@ -138,6 +142,25 @@ typedef struct {
     float score;
 } resnet_result;
 
+
+// 计算模型指标需要的结构体
+// 定义 InferenceFunction 类型,分类模型返回值是cls_model_result
+typedef cls_model_result (*ClsInferenceFunction)(rknn_app_context_t*, det_model_input, box_rect, bool);
+// 定义 ModelInfo 结构体,包含模型名、模型路径、推理函数
+struct ClsModelInfo {
+    std::string modelName;
+    std::string modelPath;
+    ClsInferenceFunction inferenceFunc;
+};
+
+// 定义 InferenceFunction 类型,检测模型返回值是object_detect_result_list
+typedef object_detect_result_list (*DetInferenceFunction)(rknn_app_context_t*, det_model_input, bool);
+// 定义 ModelInfo 结构体,包含模型名、模型路径、推理函数
+struct DetModelInfo {
+    std::string modelName;
+    std::string modelPath;
+    DetInferenceFunction inferenceFunc;
+};
 
 
 /* inference params */
