@@ -7,17 +7,18 @@
 #include <iostream>
 #include "opencv2/opencv.hpp"
 
-#include "outer_model/model_params.hpp"
-#include "outer_model/model_func.hpp"
-#include "inter_model/retinanet.hpp"
-
+#include "model_params.hpp"
+#include "model_func.hpp"
+#include "retinanet.hpp"
+#include <chrono>  // 添加这一行
+using namespace std::chrono;  // 添加这一行
 /*-------------------------------------------
                   Functions
 -------------------------------------------*/
 
-face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger=false)
+cls_model_result inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger=false)
 {
-    face_attr_cls_object result;
+    cls_model_result result;
     unsigned char* data = input_data.data; // scene image
     int width = input_data.width;
     int height = input_data.height;
@@ -34,8 +35,10 @@ face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_
     cv::Mat orig_img;
     cv::cvtColor(cv_img, orig_img, cv::COLOR_RGB2BGR); 
     // header crop img
+    // auto start = std::chrono::high_resolution_clock::now();
     cv::Mat header_crop_img = orig_img(cv::Rect(header_box.left, header_box.top, header_box.right - header_box.left, header_box.bottom - header_box.top));
-
+    // auto end = std::chrono::high_resolution_clock::now();
+    // printf("crop img cost time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
     rknn_context ctx = 0;
     int            ret;
     int            model_len = 0;
@@ -53,13 +56,12 @@ face_attr_cls_object inference_face_attr_model(rknn_app_context_t *app_ctx, det_
     }
     // post_process_classify
     result.num_class = app_ctx->io_num.n_output;
-    // result->num_class 和FACE_ATTR_NUM_CLASS要相同
     int attr_num[result.num_class];
-    attr_num[0] = FACE_ATTR_CLASS_1;
-    attr_num[1] = FACE_ATTR_CLASS_2;
-    attr_num[2] = FACE_ATTR_CLASS_3;
+    attr_num[0] = FaceAttrModelClass::FACE_ATTR_CLASS_1;
+    attr_num[1] = FaceAttrModelClass::FACE_ATTR_CLASS_2;
+    attr_num[2] = FaceAttrModelClass::FACE_ATTR_CLASS_3;
 
-    for (int i = 0; i < FACE_ATTR_NUM_CLASS; i++) {
+    for (int i = 0; i < result.num_class; i++) {
         float *output_data = (float *)outputs[i].buf;
         int max_index = -1;
         float max_value = -0.1;

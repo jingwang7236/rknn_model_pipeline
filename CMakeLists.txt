@@ -46,7 +46,7 @@ add_subdirectory(
 # 添加一个可执行文件目标，包括main.cpp和选定的retinaface实现文件
 add_executable(${PROJECT_NAME}
     main.cpp
- "include/utils/Float16.h")
+    )
 
 target_link_libraries(${PROJECT_NAME}
     rknn_model_pipeline
