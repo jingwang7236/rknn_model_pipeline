@@ -142,6 +142,11 @@ typedef struct {
     float score;
 } resnet_result;
 
+typedef struct {
+    int cls;
+    float score;
+} mobilenet_result;
+
 
 // 计算模型指标需要的结构体
 // 定义 InferenceFunction 类型,分类模型返回值是cls_model_result
