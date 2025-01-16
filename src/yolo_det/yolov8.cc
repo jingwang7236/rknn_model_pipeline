@@ -646,7 +646,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // Ä£ÐÍ¿ªÊ¼ÍÆÀíÊ±¼ä´Á
+    // Ä£ï¿½Í¿ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     inputs[0].index = 0;
@@ -679,7 +679,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     }
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
-    // ÍÆÀí½áÊøÊ±¼ä
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     if (ret < 0)
@@ -696,7 +696,7 @@ int inference_yolov8_model(rknn_app_context_t* app_ctx, void* image_buf, object_
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // ¼ÆËãÊ±¼ä
+    // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
     if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
@@ -737,7 +737,7 @@ int inference_yolov8_obb_model(
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // Ä£ÐÍ¿ªÊ¼ÍÆÀíÊ±¼ä´Á
+    // Ä£ï¿½Í¿ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     std::cout << 1 << std::endl;
@@ -775,7 +775,7 @@ int inference_yolov8_obb_model(
     ret = rknn_outputs_get(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs, NULL);
 
     std::cout << 4 << std::endl;
-    // ÍÆÀí½áÊøÊ±¼ä
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     if (ret < 0)
@@ -792,7 +792,7 @@ int inference_yolov8_obb_model(
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // ¼ÆËãÊ±¼ä
+    // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
     if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);
@@ -823,7 +823,7 @@ int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, ob
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(outputs));
 
-    // Ä£ÐÍ¿ªÊ¼ÍÆÀíÊ±¼ä´Á
+    // Ä£ï¿½Í¿ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
     auto total_start_time = std::chrono::high_resolution_clock::now();
 
     // Set Input Data
@@ -861,7 +861,7 @@ int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, ob
         return ret;
     }
 
-    // ÍÆÀí½áÊøÊ±¼ä
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
     auto inference_end_time = std::chrono::high_resolution_clock::now();
 
     // Post Process
@@ -872,7 +872,7 @@ int inference_yolov8_pose_mdoel(rknn_app_context_t* app_ctx, void* image_buf, ob
     // Remeber to release rknn output
     rknn_outputs_release(app_ctx->rknn_ctx, app_ctx->io_num.n_output, outputs);
 
-    // ¼ÆËãÊ±¼ä
+    // ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
     if (enable_logger) {
         auto total_end_time = std::chrono::high_resolution_clock::now();
         auto inference_duration = std::chrono::duration<double, std::milli>(inference_end_time - total_start_time);

@@ -34,6 +34,7 @@ file(GLOB_RECURSE SOURCE
     ${CMAKE_SOURCE_DIR}/src/ppocr/*.c*
     ${CMAKE_SOURCE_DIR}/src/resnet18/*.c*
     ${CMAKE_SOURCE_DIR}/src/tests/*.c*  # 测试模型指标,包含分类模型的准确率和检测模型的map/pr
+    ${CMAKE_SOURCE_DIR}/src/mobilenet/*.c*
     )
 message("HEADER: ${HEADER}")
 message("SOURCE: ${SOURCE}")
