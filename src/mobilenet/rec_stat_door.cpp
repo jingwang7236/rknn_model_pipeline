@@ -16,13 +16,14 @@
 #include "stb_image_resize2.h"
 #define READ_IMAGE_TYPE STBIR_RGB
 
-cls_model_inference_params cls_stat_door = { 1, 320, 160 };
+
+extern std::map<int, std::string> cls_stat_door_category_map_mobilenet = { {0,"closed"},{1,"open"},{2,"other"} };
 
 /*-------------------------------------------
 				  Main Function
 -------------------------------------------*/
 
-mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger)
+mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params cls_stat_door, bool enable_logger)
 {
 	mobilenet_result od_results;
 	memset(&od_results, 0, sizeof(resnet_result));

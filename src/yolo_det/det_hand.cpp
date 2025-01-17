@@ -15,8 +15,8 @@
 /*-------------------------------------------
                 Defines
 -------------------------------------------*/
-#define INPUT_WIDTH_DET_HAND 640
-#define INPUT_HEIGHT_DET_HAND 640
+#define INPUT_WIDTH_DET_HAND 800
+#define INPUT_HEIGHT_DET_HAND 448
 #define NMS_THRESH_DET_HAND 0.7
 #define BOX_THRESH_DET_HAND 0.25
 
@@ -49,7 +49,7 @@ object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, 
     object_detect_result_list od_results;
     int ret = 0;
 
-    if (det_by_square){
+    if (det_by_square && INPUT_WIDTH_DET_HAND == INPUT_HEIGHT_DET_HAND){
         if (enable_logger){
             printf("INFO: infer by square patch image\n");
         }

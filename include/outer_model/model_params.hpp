@@ -142,11 +142,11 @@ typedef struct {
     float score;
 } resnet_result;
 
+// MobileNet
 typedef struct {
     int cls;
     float score;
 } mobilenet_result;
-
 
 // 计算模型指标需要的结构体
 // 定义 InferenceFunction 类型,分类模型返回值是cls_model_result
@@ -189,6 +189,7 @@ extern std::map<int, std::string> det_knife_category_map; /* {0, "knife"} */
 extern std::map<int, std::string> det_stat_door_category_map; /* {0, "closed"},{1, "open"} */
 extern std::map<int, std::string> obb_stick_category_map; /* {0, "stick"} */
 extern std::map<int, std::string> cls_stat_door_category_map; /* {0, "closed"},{1, "open"},{2, "other"}  not door object */ 
+extern std::map<int, std::string> cls_stat_door_category_map_mobilenet;
 
 /*-------------------------------------------
             YOLO common start

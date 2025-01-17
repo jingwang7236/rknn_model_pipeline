@@ -1,21 +1,22 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-#include "mobilenet.h"
 #include "common.h"
 #include "file_utils.h"
 #include "image_utils.h"
+
 #include "outer_model/model_params.hpp"
+#include "mobilenet.h"
 
 static void dump_tensor_attr(rknn_tensor_attr* attr)
 {
     printf("  index=%d, name=%s, n_dims=%d, dims=[%d, %d, %d, %d], n_elems=%d, size=%d, fmt=%s, type=%s, qnt_type=%s, "
-        "zp=%d, scale=%f\n",
-        attr->index, attr->name, attr->n_dims, attr->dims[0], attr->dims[1], attr->dims[2], attr->dims[3],
-        attr->n_elems, attr->size, get_format_string(attr->fmt), get_type_string(attr->type),
-        get_qnt_type_string(attr->qnt_type), attr->zp, attr->scale);
+            "zp=%d, scale=%f\n",
+            attr->index, attr->name, attr->n_dims, attr->dims[0], attr->dims[1], attr->dims[2], attr->dims[3],
+            attr->n_elems, attr->size, get_format_string(attr->fmt), get_type_string(attr->type),
+            get_qnt_type_string(attr->qnt_type), attr->zp, attr->scale);
 }
 
 typedef struct {
@@ -169,13 +170,12 @@ int init_mobilenet_model(const char* model_path, rknn_app_context_t* app_ctx)
     if (input_attrs[0].fmt == RKNN_TENSOR_NCHW) {
         printf("model is NCHW input fmt\n");
         app_ctx->model_channel = input_attrs[0].dims[1];
-        app_ctx->model_height = input_attrs[0].dims[2];
-        app_ctx->model_width = input_attrs[0].dims[3];
-    }
-    else {
+        app_ctx->model_height  = input_attrs[0].dims[2];
+        app_ctx->model_width   = input_attrs[0].dims[3];
+    } else {
         printf("model is NHWC input fmt\n");
-        app_ctx->model_height = input_attrs[0].dims[1];
-        app_ctx->model_width = input_attrs[0].dims[2];
+        app_ctx->model_height  = input_attrs[0].dims[1];
+        app_ctx->model_width   = input_attrs[0].dims[2];
         app_ctx->model_channel = input_attrs[0].dims[3];
     }
     printf("model input height=%d, width=%d, channel=%d\n",
@@ -231,10 +231,10 @@ int inference_mobilenet_model(rknn_app_context_t* app_ctx, image_buffer_t* src_i
 
     // Set Input Data
     inputs[0].index = 0;
-    inputs[0].type = RKNN_TENSOR_UINT8;
-    inputs[0].fmt = RKNN_TENSOR_NHWC;
-    inputs[0].size = app_ctx->model_width * app_ctx->model_height * app_ctx->model_channel;
-    inputs[0].buf = img.virt_addr;
+    inputs[0].type  = RKNN_TENSOR_UINT8;
+    inputs[0].fmt   = RKNN_TENSOR_NHWC;
+    inputs[0].size  = app_ctx->model_width * app_ctx->model_height * app_ctx->model_channel;
+    inputs[0].buf   = img.virt_addr;
 
     ret = rknn_inputs_set(app_ctx->rknn_ctx, 1, inputs);
     if (ret < 0) {
