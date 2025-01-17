@@ -68,6 +68,7 @@ object_detect_obb_result_list inference_obb_stick_model(rknn_app_context_t* app_
 /* rec status door */
 resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger);
 
+mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false);
 // 模型管理类
 class ClsModelManager{
     public:

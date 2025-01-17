@@ -249,7 +249,8 @@ int main(int argc, char **argv) {
         printf("inference_face_attr_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&det_rknn_app_ctx);  //释放
         ret = release_model(&cls_rknn_app_ctx);
-    }else if (std::string(model_name) == "ppocr"){
+    }
+    else if (std::string(model_name) == "ppocr"){
         const char* det_model_path = "model/ppocrv4_det.rknn";
         const char* rec_model_path = "model/ppocrv4_rec.rknn";
         ppocr_system_app_context rknn_app_ctx;
@@ -427,7 +428,7 @@ int main(int argc, char **argv) {
         model_inference_params params_det_gun = { 1024,1024,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "../model/jhpoc_1206-test1_obb_stick_1024_i8.rknn";
+        const char* model_path = "../model/jhpoc_250109-test1_obb_stick_1024.rknn";
         ret = init_model(model_path, &rknn_app_ctx);
         if (ret != 0)
         {
@@ -435,24 +436,7 @@ int main(int argc, char **argv) {
             return -1;
         }
 
-        object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rknn_app_ctx, input_data, false);
-        ret = release_model(&rknn_app_ctx);
-    }
-    else if (std::string(model_name) == "obb_stick") {
-
-        /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_det_gun = { 1024,1024,0.6f,0.25f };
-        rknn_app_context_t rknn_app_ctx;
-        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "../model/jhpoc_1206-test1_obb_stick_1024_i8.rknn";
-        ret = init_model(model_path, &rknn_app_ctx);
-        if (ret != 0)
-        {
-            printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
-            return -1;
-        }
-
-        rknn_app_ctx.is_quant = true;
+        rknn_app_ctx.is_quant = false;
 
         //print_rknn_app_context(rknn_app_ctx);
 
@@ -463,10 +447,9 @@ int main(int argc, char **argv) {
             printf("release_yolov8_model fail! ret=%d\n", ret);
         }
     }
-
     else if (std::string(model_name) == "rec_stat_door") {
         // 分类初始化
-        const char* model_path = "../model/cls_stat_door_model_resnet18_150108_i8.rknn";
+        const char* model_path = "../model/cls_stat_door_model_mobilenet_v3_small_250116_i8.rknn";
         rknn_app_context_t rec_rknn_app_ctx;
         memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         ret = init_model(model_path, &rec_rknn_app_ctx);
@@ -476,8 +459,8 @@ int main(int argc, char **argv) {
             printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-
-        resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        //mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
+        mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, true);
         std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
         }
