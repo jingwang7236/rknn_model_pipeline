@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
         model_inference_params params_det_stat_door = { 640,640,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "../model/jhpoc_1225_stat_door_det2_640_rk.rknn";
+        const char* model_path = "model/jhpoc_1225_stat_door_det2_640_rk.rknn";
         //const char* label_txt_path = "model/classes_door.txt";
         ret = init_model(model_path, &rknn_app_ctx);
         if (ret != 0)
@@ -428,7 +428,7 @@ int main(int argc, char **argv) {
         model_inference_params params_det_gun = { 1024,1024,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "../model/jhpoc_250109-test1_obb_stick_1024.rknn";
+        const char* model_path = "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn";
         ret = init_model(model_path, &rknn_app_ctx);
         if (ret != 0)
         {
@@ -451,7 +451,7 @@ int main(int argc, char **argv) {
         // 分类初始化
         cls_model_inference_params cls_stat_door = { 1, 320, 160 };
 
-        const char* model_path = "../model/cls_stat_door_model_mobilenet_v3_small_250116_i8.rknn";
+        const char* model_path = "model/cls_stat_door_model_resnet18_150108_i8.rknn";
         rknn_app_context_t rec_rknn_app_ctx;
         memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         ret = init_model(model_path, &rec_rknn_app_ctx);
