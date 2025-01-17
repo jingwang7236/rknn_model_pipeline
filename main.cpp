@@ -449,6 +449,8 @@ int main(int argc, char **argv) {
     }
     else if (std::string(model_name) == "rec_stat_door") {
         // 分类初始化
+        cls_model_inference_params cls_stat_door = { 1, 320, 160 };
+
         const char* model_path = "../model/cls_stat_door_model_mobilenet_v3_small_250116_i8.rknn";
         rknn_app_context_t rec_rknn_app_ctx;
         memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
@@ -460,7 +462,7 @@ int main(int argc, char **argv) {
             return -1;
         }
         //mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
-        mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, true);
+        mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, cls_stat_door, true);
         std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
         }

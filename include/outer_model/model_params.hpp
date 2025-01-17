@@ -189,6 +189,7 @@ extern std::map<int, std::string> det_knife_category_map; /* {0, "knife"} */
 extern std::map<int, std::string> det_stat_door_category_map; /* {0, "closed"},{1, "open"} */
 extern std::map<int, std::string> obb_stick_category_map; /* {0, "stick"} */
 extern std::map<int, std::string> cls_stat_door_category_map; /* {0, "closed"},{1, "open"},{2, "other"}  not door object */ 
+extern std::map<int, std::string> cls_stat_door_category_map_mobilenet;
 
 /*-------------------------------------------
             YOLO common start
