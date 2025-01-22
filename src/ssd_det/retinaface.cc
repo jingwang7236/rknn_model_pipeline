@@ -103,7 +103,7 @@ static int post_process_retinaface(rknn_app_context_t *app_ctx, image_buffer_t *
                                        filter_indices, props, CONF_THRESHOLD, num_priors);
 
     quick_sort_indice_inverse(props, 0, validCount - 1, filter_indices);
-    nms(validCount, location, filter_indices, NMS_THRESHOLD, src_img->width, src_img->height);
+    nms(validCount, location, filter_indices, NMS_THRESHOLD);
 
 
     int last_count = 0;

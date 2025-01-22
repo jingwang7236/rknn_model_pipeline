@@ -39,16 +39,40 @@ int main(int argc, char **argv) {
         clsmodelManager.addModel("FaceAttr", "model/FaceAttr.rknn", inference_face_attr_model); // 模型名、模型路径、推理函数
         ret = ClsModelAccuracyCalculator(clsmodelManager, "FaceAttr", image_path);
         return ret;
-    }else if (std::string(model_name) == "test_person_det"){
+    }else if (std::string(model_name) == "test_coco_det"){
         // 定义label_name和label_id的映射关系，传入函数
         std::map<std::string, int> label_name_map = {
-            {"ren", 0},  // labelme标注工具：label_name和模型输出的label_id对应
+            {"ren", 0},
+            {"person", 0},  // labelme标注工具：label_name和模型输出的label_id对应
         };
-        float CONF_THRESHOLD = 0.5; // 计算某个阈值的PR
+        float CONF_THRESHOLD = 0.3; // 计算某个阈值区间的PR
         float NMS_THRESHOLD = 0.45; // 计算MAP
         DetModelManager modelManager;
-        modelManager.addModel("PersonDet", "model/yolov10s.rknn", inference_person_det_model);
+        printf("inference_coco_person_model start\n");
+        auto start = std::chrono::high_resolution_clock::now();       
+        modelManager.addModel("CocoPersonDet", "model/yolov10s.rknn", inference_coco_person_det_model);
+        ret = DetModelMapCalculator(modelManager, "CocoPersonDet", image_path, label_name_map, CONF_THRESHOLD, NMS_THRESHOLD);
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("inference_coco_person_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+        printf("inference_coco_person_model end\n");
+        return ret;
+    }
+    else if (std::string(model_name) == "test_person_det"){
+        // 定义label_name和label_id的映射关系，传入函数
+        std::map<std::string, int> label_name_map = {
+            {"ren", 0},
+            {"person", 0},  // labelme标注工具：label_name和模型输出的label_id对应
+        };
+        float CONF_THRESHOLD = 0.3; // 计算某个阈值区间的PR
+        float NMS_THRESHOLD = 0.45; // 计算MAP
+        printf("inference_person_det_model start\n");
+        auto start = std::chrono::high_resolution_clock::now();  
+        DetModelManager modelManager;
+        modelManager.addModel("PersonDet", "model/PersonDet.rknn", inference_person_det_model);
         ret = DetModelMapCalculator(modelManager, "PersonDet", image_path, label_name_map, CONF_THRESHOLD, NMS_THRESHOLD);
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("inference_person_det_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+        printf("inference_person_det_model end\n");
         return ret;
     }
 
@@ -80,7 +104,7 @@ int main(int argc, char **argv) {
            printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
            return -1;
        }
-       ssd_det_result result = inference_header_det_model(&rknn_app_ctx, input_data, true); //推理
+       object_detect_result_list result = inference_header_det_model(&rknn_app_ctx, input_data, true); //推理
        ret = release_model(&rknn_app_ctx);  //释放
        if (ret != 0) {
            printf("release_retinanet_model fail! ret=%d\n", ret);
@@ -96,7 +120,7 @@ int main(int argc, char **argv) {
            printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
            return -1;
        }
-       ssd_det_result result = inference_phone_det_model(&rknn_app_ctx, input_data, true); //推理
+       object_detect_result_list result = inference_phone_det_model(&rknn_app_ctx, input_data, true); //推理
        ret = release_model(&rknn_app_ctx);  //释放
        if (ret != 0) {
            printf("release_retinanet_model fail! ret=%d\n", ret);
@@ -119,7 +143,7 @@ int main(int argc, char **argv) {
            return -1;
     }
     }
-    else if (std::string(model_name) == "person_det"){
+    else if (std::string(model_name) == "coco_person_det"){
        rknn_app_context_t rknn_app_ctx;
        memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
        const char* model_path = "model/yolov10s.rknn";
@@ -127,6 +151,27 @@ int main(int argc, char **argv) {
        if (ret != 0)
        {
            printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
+           return -1;
+       }
+       printf("inference_coco_person_model start\n");
+       auto start = std::chrono::high_resolution_clock::now();
+       object_detect_result_list result = inference_coco_person_det_model(&rknn_app_ctx, input_data, true); //推理
+       auto end = std::chrono::high_resolution_clock::now();
+       printf("inference_coco_person_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+       printf("inference_coco_person_model end\n");
+       ret = release_model(&rknn_app_ctx);
+       if (ret != 0)
+       {
+           printf("release_yolov10_model fail! ret=%d\n", ret);
+       }
+    }else if (std::string(model_name) == "person_det"){
+       rknn_app_context_t rknn_app_ctx;
+       memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+       const char* model_path = "model/PersonDet.rknn";
+       ret = init_model(model_path, &rknn_app_ctx);
+       if (ret != 0)
+       {
+           printf("init_person_det_model fail! ret=%d model_path=%s\n", ret, model_path);
            return -1;
        }
        printf("inference_person_det_model start\n");
@@ -138,7 +183,7 @@ int main(int argc, char **argv) {
        ret = release_model(&rknn_app_ctx);
        if (ret != 0)
        {
-           printf("release_yolov10_model fail! ret=%d\n", ret);
+           printf("release_person_det_model fail! ret=%d\n", ret);
        }
     }
     else if (std::string(model_name) == "det_knife"){
@@ -228,16 +273,16 @@ int main(int argc, char **argv) {
         const char* cls_model_path = "model/FaceAttr.rknn";
         ret = init_model(cls_model_path, &cls_rknn_app_ctx);
         auto start = std::chrono::high_resolution_clock::now();
-        ssd_det_result det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
+        object_detect_result_list det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
         auto det_end = std::chrono::high_resolution_clock::now();
         printf("inference_header_det_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(det_end - start).count() / 1000.0);
         det_result.count = det_result.count;
         for (int i = 0; i < det_result.count; ++i) {
             box_rect header_box;  // header的box
-            header_box.left = std::max(det_result.object[i].box.left, 0);
-            header_box.top = std::max(det_result.object[i].box.top, 0);
-            header_box.right = std::min(det_result.object[i].box.right, width);
-            header_box.bottom = std::min(det_result.object[i].box.bottom, height);
+            header_box.left = std::max(det_result.results[i].box.left, 0);
+            header_box.top = std::max(det_result.results[i].box.top, 0);
+            header_box.right = std::min(det_result.results[i].box.right, width);
+            header_box.bottom = std::min(det_result.results[i].box.bottom, height);
             // 人脸属性模型
             auto cls_start = std::chrono::high_resolution_clock::now();
             cls_model_result cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);

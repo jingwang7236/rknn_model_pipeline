@@ -16,14 +16,17 @@
  * @param gpu_id:  显卡号，方便盒子端调度资源 ---未实现
  * @param logger:  是否打印日志
  * @param result:  返回结果
+
 */
-ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
+
+object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
+    std::string label_name = "header";
     // rknn_context ctx = 0;
     int            ret;
     // int            model_len = 0;
     // unsigned char* model;
-    ssd_det_result result;
+    object_detect_result_list result;
 
     const int num_class = 1;
     float det_threshold = 0.5;
@@ -47,18 +50,6 @@ ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model
     cv::Mat orig_img;
     cv::cvtColor(cv_img, orig_img, cv::COLOR_RGB2BGR); 
 
-    // rknn_app_context_t rknn_app_ctx;
-    // memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-
-    // ret = init_retinanet_model(model_path, &rknn_app_ctx);
-    // if (ret != 0) {
-    //     if (enable_logger) {
-    //         printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
-    //     }
-    //     ret_result.error_code = MODEL_ERR;
-    //     return ret_result;
-    // }
-
     ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
     if (ret != 0) {
         if (enable_logger){
@@ -70,8 +61,8 @@ ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model
     if (enable_logger) {
         printf("detect result num: %d\n", result.count);
         for (int i = 0; i < result.count; ++i) {
-            printf("header @(%d %d %d %d) score=%f\n", result.object[i].box.left, result.object[i].box.top,
-                result.object[i].box.right, result.object[i].box.bottom, result.object[i].score);
+            printf("%s @(%d %d %d %d) score=%f\n", label_name.c_str(), result.results[i].box.left, result.results[i].box.top,
+                result.results[i].box.right, result.results[i].box.bottom, result.results[i].prop);
         }
     }
     bool enable_draw_image = false; //画图,本地测试
@@ -81,14 +72,14 @@ ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model
         // cv::imwrite("input.png", orig_img_clone);
         for (int i = 0; i < result.count; ++i) {
             if (enable_draw_image) {
-                int rx = result.object[i].box.left;
-                int ry = result.object[i].box.top;
-                int rw = result.object[i].box.right - result.object[i].box.left;
-                int rh = result.object[i].box.bottom - result.object[i].box.top;
+                int rx = result.results[i].box.left;
+                int ry = result.results[i].box.top;
+                int rw = result.results[i].box.right - result.results[i].box.left;
+                int rh = result.results[i].box.bottom - result.results[i].box.top;
 
                 cv::Rect box(rx, ry, rw, rh);
-                std::string text = "header";
-                std::string score_str = std::to_string(result.object[i].score);
+                std::string text = label_name;
+                std::string score_str = std::to_string(result.results[i].prop);
                 text += " " + score_str;
                 cv::Scalar color(0, 255, 0);  // 绿色
                 cv::rectangle(orig_img_clone, box, color, 2);
@@ -96,26 +87,16 @@ ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model
                 cv::putText(orig_img_clone, text, textOrg, cv::FONT_HERSHEY_SIMPLEX, 0.9, color, 2);
                 
             }
-            if (result.object[i].score < det_threshold) {
+            if (result.results[i].prop < det_threshold) {
                 continue;
             }
-            printf("header @(%d %d %d %d) score=%f\n", result.object[i].box.left, result.object[i].box.top,
-                result.object[i].box.right, result.object[i].box.bottom, result.object[i].score);
+            printf("%s @(%d %d %d %d) score=%f\n", label_name.c_str(), result.results[i].box.left, result.results[i].box.top,
+                result.results[i].box.right, result.results[i].box.bottom, result.results[i].prop);
         }
-        const char* image_path = "header_det_result.png";
+        std::string image_path_str = label_name + "_det_result.png";
+        const char* image_path = image_path_str.c_str();
         cv::imwrite(image_path, orig_img_clone);
         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
         }
-    
-    // ret = release_retinanet_model(&rknn_app_ctx);
-    // if (ret != 0) {
-    //     if (enable_logger){
-    //         printf("release_retinanet_model fail! ret=%d\n", ret);
-    //     }
-    //     ret_result.error_code = MODEL_ERR;
-    //     return ret_result;
-    // }
-    // ret_result.error_code = MODEL_OK;
-    // ret_result.det_result = result;
     return result;
 }
