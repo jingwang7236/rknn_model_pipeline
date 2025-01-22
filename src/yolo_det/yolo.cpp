@@ -73,7 +73,7 @@ int Yolo::init_model(rknn_context *ctx_in, bool copy_weight) {
 
     // 绑定模型运行的NPU核心
     int core_num = -1;
-    if (core_num < 0 or core_num > RK3588){
+    if (core_num < 0 or core_num >= RK3588){
         core_num = get_core_num();
     }
 

@@ -1558,7 +1558,7 @@ int post_process_obb_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t*
     }
 
 
-    std::cout << "process_i8_obb_hw" << std::endl;
+   // std::cout << "process_i8_obb_hw" << std::endl;
     // no object detect
     if (validCount <= 0) {
         return 0;
@@ -1569,14 +1569,14 @@ int post_process_obb_hw(rknn_app_context_t* app_ctx, void* outputs, letterbox_t*
     }
     quick_sort_indice_inverse_hw(objProbs, 0, validCount - 1, indexArray);
 
-    std::cout << "quick_sort_indice_inverse_hw" << std::endl;
+   // std::cout << "quick_sort_indice_inverse_hw" << std::endl;
     std::set<int> class_set(std::begin(classId), std::end(classId));
 
     for (auto c : class_set) {
         nms_obb_hw(validCount, filterBoxes, classId, indexArray, c, nms_threshold);
     }
 
-    std::cout << "nms_obb_hw" << std::endl;
+    //std::cout << "nms_obb_hw" << std::endl;
 
     int last_count = 0;
     od_results->count = 0;
