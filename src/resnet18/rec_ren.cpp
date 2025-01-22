@@ -20,8 +20,8 @@
                 Constants
 -------------------------------------------*/
 #define REC_REN_RET_TOP_K 1
-#define IMG_HEIGHT 320
-#define IMG_WIDTH 160
+#define IMG_HEIGHT 256
+#define IMG_WIDTH 128
 #define READ_IMAGE_TYPE STBIR_RGB
 
 // 定义类别字典
@@ -36,7 +36,7 @@ std::map<int, std::string> rec_ren_category_map = {
                   Main Function
 -------------------------------------------*/
 
-resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
+resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger)
 {
     resnet_result od_results;
     memset(&od_results, 0, sizeof(resnet_result));
