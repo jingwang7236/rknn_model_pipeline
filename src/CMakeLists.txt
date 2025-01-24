@@ -42,7 +42,8 @@ message("SOURCE: ${SOURCE}")
 
 add_library(
     rknn_model_pipeline
-    STATIC
+    STATIC  # 静态库
+    # SHARED #动态库
     ${HEADER}  # 自己调用的头文件全部打包在静态库中，提供给外部使用的头文件放在model_params.hpp和model_func.cpp中
     ${SOURCE}
 )

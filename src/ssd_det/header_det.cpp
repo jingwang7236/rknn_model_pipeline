@@ -22,6 +22,7 @@
 object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
     std::string label_name = "header";
+    std::string model_name = "header_det";
     // rknn_context ctx = 0;
     int            ret;
     // int            model_len = 0;
@@ -50,7 +51,7 @@ object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx
     cv::Mat orig_img;
     cv::cvtColor(cv_img, orig_img, cv::COLOR_RGB2BGR); 
 
-    ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
+    ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class, model_name.c_str());
     if (ret != 0) {
         if (enable_logger){
             printf("inference_retinanet_model fail! ret=%d\n", ret);

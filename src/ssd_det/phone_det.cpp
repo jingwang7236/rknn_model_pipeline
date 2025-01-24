@@ -20,6 +20,7 @@
 */
 object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
+    std::string model_name = "phone_det";
     // rknn_context ctx = 0;
     int            ret;
     // int            model_len = 0;
@@ -58,7 +59,7 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
                 object_detect_result_list patch_result;
                 cv::Rect roi(j * patchWidth, i * patchHeight, patchWidth, patchHeight);
                 cv::Mat patch = orig_img(roi);
-                ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class);
+                ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class, model_name.c_str());
                 // 检测结果合并
                 // printf("patch result num: %d\n", patch_result.count);
                 for(int k = 0; k < patch_result.count; ++k){
@@ -81,7 +82,7 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
         float ctr_k = 0.5;
         cv::Rect roi(ctr_k * patchWidth, ctr_k * patchHeight, patchWidth, patchHeight);
         cv::Mat patch = orig_img(roi);
-        ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class);
+        ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class, model_name.c_str());
         // 检测结果合并
         // printf("patch result num: %d\n", patch_result.count);
         for(int k = 0; k < patch_result.count; ++k){
@@ -127,7 +128,7 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
         ret = 0;
     }else {
         // input image is raw image
-        ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
+        ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class, model_name.c_str());
     }
     // ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
     if (ret != 0) {
