@@ -188,7 +188,7 @@ static int filterValidResult(float *scores, float *loc, const float boxPriors[][
     return validCount;
 }
 
-static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, rknn_output outputs[], object_detect_result_list *result, letterbox_four *letter_box, const int num_class) 
+static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, rknn_output outputs[], object_detect_result_list *result, letterbox_four *letter_box, const int num_class, const char* model_name) 
 {
     float *scores = (float *)outputs[0].buf; // [1, 46440, 7, 0]
     float *location = (float *)outputs[1].buf; // [1, 46440, 4, 0]
@@ -197,7 +197,11 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
     // int location_size = outputs[1].size / sizeof(float); // 46440*4
     const float (*prior_ptr)[4];
     int num_priors = 46440; // 5层FPN的H*W,决定了anchor数量
-    prior_ptr = BOX_PRIORS_576;
+    if (model_name == "person_det"){
+        prior_ptr = BOX_PRIORS_576_PERSON;
+    } else{
+        prior_ptr = BOX_PRIORS_576;
+    }
     int filter_indices[num_priors];
     float props[num_priors];
 
@@ -302,7 +306,7 @@ static int pre_process_retinanet(rknn_app_context_t *app_ctx, const cv::Mat& ori
 }
 
 
-int inference_retinanet_model(rknn_app_context_t *app_ctx, cv::Mat src_img, object_detect_result_list *out_result, const int num_class) {
+int inference_retinanet_model(rknn_app_context_t *app_ctx, cv::Mat src_img, object_detect_result_list *out_result, const int num_class,const char* model_name) {
     int ret;
     letterbox_four letter_box;  //     int x_pad;int y_pad;float scale; image resize params
     rknn_input inputs[1];
@@ -354,7 +358,7 @@ int inference_retinanet_model(rknn_app_context_t *app_ctx, cv::Mat src_img, obje
         return ret;
     }
 
-    ret = post_process_retinanet(app_ctx, src_img, outputs, out_result, &letter_box, num_class);
+    ret = post_process_retinanet(app_ctx, src_img, outputs, out_result, &letter_box, num_class, model_name);
     if (ret < 0) {
         printf("post_process_retinaface fail! ret=%d\n", ret);
         return -1;
