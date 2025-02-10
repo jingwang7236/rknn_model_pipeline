@@ -265,7 +265,13 @@ int DetModelMapCalculator(DetModelManager& modelManager, const std::string& mode
             det_result.is_true_positive = matched[i];
             all_results[class_id].push_back(det_result);
         }
+        if (input_data.data != nullptr){
+            free(input_data.data);
+        }
+        printf("Person Count Result: %zu\n", all_results[0].size());
+        printf("Processed image: %d\n", total_cnt);
     }
+    printf("Total images: %d\n", total_cnt);
     // 计算每个类别的 AP
     std::vector<float> aps(num_class, 0.0f);
     for (int class_id = 0; class_id < num_class; class_id++) {
@@ -275,9 +281,12 @@ int DetModelMapCalculator(DetModelManager& modelManager, const std::string& mode
             aps[class_id] = compute_average_precision(pr_curve);
             std::cout << "Class " << class_id << ": AP = " << aps[class_id] << std::endl;
             // 计算指定阈值下的 Precision 和 Recall
-            std::pair<float, float> pr_at_threshold = compute_precision_recall_at_threshold(all_results[class_id], num_gt_boxes, CONF_THRESHOLD);
-            std::cout << "Class " << class_id << ": Precision at threshold " << CONF_THRESHOLD << " = " << pr_at_threshold.first << std::endl;
-            std::cout << "Class " << class_id << ": Recall at threshold " << CONF_THRESHOLD << " = " << pr_at_threshold.second << std::endl;
+            for (float thres = CONF_THRESHOLD; thres <= 1.0f; thres += 0.1f){
+                std::pair<float, float> pr_at_threshold = compute_precision_recall_at_threshold(all_results[class_id], num_gt_boxes, thres);
+                std::cout << "Class " << class_id << ": Precision at threshold " << thres << " = " << pr_at_threshold.first << std::endl;
+                std::cout << "Class " << class_id << ": Recall at threshold " << thres << " = " << pr_at_threshold.second << std::endl;
+            }
+            
         }
     }
 
@@ -287,7 +296,6 @@ int DetModelMapCalculator(DetModelManager& modelManager, const std::string& mode
         mAP += ap;
     }
     mAP /= num_class;
-
     std::cout << "mAP: " << mAP << std::endl;
 
     ret = release_model(&rknn_app_ctx);
