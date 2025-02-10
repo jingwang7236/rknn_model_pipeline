@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
         model_inference_params params_det_stat_door = { 640,640,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "model/jhpoc_1225_stat_door_det2_640_rk.rknn";
+        const char* model_path = "model/jhpoc_1225_stat_door_det2_640_rk_i8.rknn";
         //const char* label_txt_path = "model/classes_door.txt";
         ret = init_model(model_path, &rknn_app_ctx);
         if (ret != 0)
