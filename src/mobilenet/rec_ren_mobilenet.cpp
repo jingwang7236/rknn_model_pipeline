@@ -12,7 +12,7 @@
 #include "file_utils.h"
 #include "opencv2/opencv.hpp"
 #include "mobilenet.h"
-#include "outer_model/model_func.hpp"
+#include "model_func.hpp"
 // #define STB_IMAGE_RESIZE2_IMPLEMENTATION
 #include "stb_image_resize2.h"
 

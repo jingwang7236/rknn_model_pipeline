@@ -197,7 +197,7 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
     // int location_size = outputs[1].size / sizeof(float); // 46440*4
     const float (*prior_ptr)[4];
     int num_priors = 46440; // 5层FPN的H*W,决定了anchor数量
-    if (model_name == "person_det"){
+    if (strcmp(model_name, "person_det") == 0){
         prior_ptr = BOX_PRIORS_576_PERSON;
     } else{
         prior_ptr = BOX_PRIORS_576;
