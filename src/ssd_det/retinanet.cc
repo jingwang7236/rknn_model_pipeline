@@ -14,9 +14,9 @@
 #include "outer_model/model_params.hpp"
 #include "inter_model/retinanet.hpp"
 
-#define NMS_THRESHOLD 0.25
-#define CONF_THRESHOLD 0.5
-#define VIS_THRESHOLD 0.1
+#define NMS_THRESHOLD  0.25
+#define CONF_THRESHOLD 0.3
+#define VIS_THRESHOLD 0.3
 
 static int clamp(int x, int min, int max) {
     if (x > max) return max;
@@ -40,7 +40,7 @@ static float CalculateOverlap(float xmin0, float ymin0, float xmax0, float ymax0
     return u <= 0.f ? 0.f : (i / u);
 }
 
-int nms(int validCount, float *outputLocations, int order[], float threshold, int width, int height) {
+int nms(int validCount, float *outputLocations, int order[], float threshold) {
     for (int i = 0; i < validCount; ++i) {
         if (order[i] == -1) {
             continue;
@@ -65,6 +65,44 @@ int nms(int validCount, float *outputLocations, int order[], float threshold, in
             // printf("iou:%f\n", iou);
             if (iou > threshold) {
                 order[j] = -1;
+            }
+        }
+    }
+    return 0;
+}
+
+
+static int soft_nms(int validCount, float *outputLocations, float *props, int order[], float threshold, const int num_class) {
+    for (int i = 0; i < validCount; ++i) {
+        if (order[i] == -1) {
+            continue;
+        }
+        int n = order[i];
+        for (int j = i + 1; j < validCount; ++j) {
+            int m = order[j];
+            if (m == -1) {
+                continue;
+            }
+            
+            float xmin0 = outputLocations[n * 4 + 0];
+            float ymin0 = outputLocations[n * 4 + 1];
+            float xmax0 = outputLocations[n * 4 + 2];
+            float ymax0 = outputLocations[n * 4 + 3];
+
+            float xmin1 = outputLocations[m * 4 + 0];
+            float ymin1 = outputLocations[m * 4 + 1];
+            float xmax1 = outputLocations[m * 4 + 2];
+            float ymax1 = outputLocations[m * 4 + 3];
+            float iou = CalculateOverlap(xmin0, ymin0, xmax0, ymax0, xmin1, ymin1, xmax1, ymax1);
+            // printf("iou:%f\n", iou);
+            if (iou > threshold) {
+                // 应用soft nms 抑制公式
+                float score = props[m];
+                float sigma = 0.5;
+                score = score * exp(-(iou * iou) / (2 * sigma * sigma));
+                if (score < 0.01) {
+                    order[j] = -1;
+                }
             }
         }
     }
@@ -110,10 +148,10 @@ static int filterValidResult(float *scores, float *loc, const float boxPriors[][
     for (int i = 0; i < num_results; ++i) {
         // float face_score = scores[i * 7];
         // printf("%d num_class \n", num_class);
-        float face_score = scores[i * num_class];
-        if (face_score > threshold) {
+        float score = scores[i * num_class];
+        if (score > threshold) {
             filter_indice[validCount] = i;
-            props[validCount] = face_score;
+            props[validCount] = score;
             // printf("%d %f box:(%f %f %f %f)\n", i, face_score, loc[i * 4 + 0], loc[i * 4 + 1], loc[i * 4 + 2], loc[i * 4 + 3]);
             //decode location to origin position
             float anchor_w = boxPriors[i][2] - boxPriors[i][0];
@@ -150,7 +188,7 @@ static int filterValidResult(float *scores, float *loc, const float boxPriors[][
     return validCount;
 }
 
-static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, rknn_output outputs[], ssd_det_result *result, letterbox_four *letter_box, const int num_class) 
+static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, rknn_output outputs[], object_detect_result_list *result, letterbox_four *letter_box, const int num_class, const char* model_name) 
 {
     float *scores = (float *)outputs[0].buf; // [1, 46440, 7, 0]
     float *location = (float *)outputs[1].buf; // [1, 46440, 4, 0]
@@ -159,7 +197,11 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
     // int location_size = outputs[1].size / sizeof(float); // 46440*4
     const float (*prior_ptr)[4];
     int num_priors = 46440; // 5层FPN的H*W,决定了anchor数量
-    prior_ptr = BOX_PRIORS_576;
+    if (model_name == "person_det"){
+        prior_ptr = BOX_PRIORS_576_PERSON;
+    } else{
+        prior_ptr = BOX_PRIORS_576;
+    }
     int filter_indices[num_priors];
     float props[num_priors];
 
@@ -172,8 +214,8 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
 
     // printf("%d valid \n", validCount);
     quick_sort_indice_inverse(props, 0, validCount - 1, filter_indices);
-    nms(validCount, location, filter_indices, NMS_THRESHOLD, src_img.cols, src_img.rows);
-
+    // nms(validCount, location, filter_indices, NMS_THRESHOLD);
+    soft_nms(validCount, location, props, filter_indices, NMS_THRESHOLD, num_class);
     int last_count = 0;
     result->count = 0;
     for (int i = 0; i < validCount; ++i) {
@@ -192,11 +234,11 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
         float y2 = location[n * 4 + 3] - letter_box->top_pad;
         int model_in_w = app_ctx->model_width;
         int model_in_h = app_ctx->model_height;
-        result->object[last_count].box.left   = (int)(clamp(x1, 0, model_in_w) / letter_box->x_scale); // Face box
-        result->object[last_count].box.top    = (int)(clamp(y1, 0, model_in_h) / letter_box->y_scale);
-        result->object[last_count].box.right  = (int)(clamp(x2, 0, model_in_w) / letter_box->x_scale);
-        result->object[last_count].box.bottom = (int)(clamp(y2, 0, model_in_h) / letter_box->y_scale);
-        result->object[last_count].score = props[i]; // Confidence
+        result->results[last_count].box.left   = (int)(clamp(x1, 0, model_in_w) / letter_box->x_scale); // Face box
+        result->results[last_count].box.top    = (int)(clamp(y1, 0, model_in_h) / letter_box->y_scale);
+        result->results[last_count].box.right  = (int)(clamp(x2, 0, model_in_w) / letter_box->x_scale);
+        result->results[last_count].box.bottom = (int)(clamp(y2, 0, model_in_h) / letter_box->y_scale);
+        result->results[last_count].prop = props[i]; // Confidence
         last_count++;
     }
     result->count = last_count;
@@ -264,7 +306,7 @@ static int pre_process_retinanet(rknn_app_context_t *app_ctx, const cv::Mat& ori
 }
 
 
-int inference_retinanet_model(rknn_app_context_t *app_ctx, cv::Mat src_img, ssd_det_result *out_result, const int num_class) {
+int inference_retinanet_model(rknn_app_context_t *app_ctx, cv::Mat src_img, object_detect_result_list *out_result, const int num_class,const char* model_name) {
     int ret;
     letterbox_four letter_box;  //     int x_pad;int y_pad;float scale; image resize params
     rknn_input inputs[1];
@@ -316,7 +358,7 @@ int inference_retinanet_model(rknn_app_context_t *app_ctx, cv::Mat src_img, ssd_
         return ret;
     }
 
-    ret = post_process_retinanet(app_ctx, src_img, outputs, out_result, &letter_box, num_class);
+    ret = post_process_retinanet(app_ctx, src_img, outputs, out_result, &letter_box, num_class, model_name);
     if (ret < 0) {
         printf("post_process_retinaface fail! ret=%d\n", ret);
         return -1;
