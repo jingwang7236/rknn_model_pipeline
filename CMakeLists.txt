@@ -65,6 +65,17 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIBRKNNRT_INCLUDES}
 )
 
+add_executable(test  # 测试模型准确率的程序
+    test.cpp
+)
+target_link_libraries(test
+    rknn_model_pipeline
+)
+target_include_directories(test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${LIBRKNNRT_INCLUDES}
+)
+
 # 安装目标可执行文件到当前目录下
 install(TARGETS rknn_model_pipeline ARCHIVE DESTINATION lib)
 install(TARGETS ${PROJECT_NAME} DESTINATION ./)
