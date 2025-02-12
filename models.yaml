@@ -1,0 +1,45 @@
+models:
+  header_det:
+    path: "model/HeaderDet.rknn"
+  phone_det:
+    path: "model/PhoneDet.rknn"
+  face_det:
+    path: "model/RetinaFace.rknn"
+  coco_person_det:
+    path: "model/yolov10s.rknn"
+  person_det:
+    path: "model/PersonDet.rknn"
+  det_knife:
+    path: "model/yolov8n_1105_det_knife_i8.rknn"
+  det_gun:
+    path: "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn"
+  det_stat_door:
+    path: "model/jhpoc_1225_stat_door_det2_640_rk.rknn"
+  face_attr:
+    det_path: "model/HeaderDet.rknn"
+    cls_path: "model/FaceAttr.rknn"
+  ppocr:
+    det_path: "model/ppocrv4_det.rknn"
+    rec_path: "model/ppocrv4_rec.rknn"
+  rec_ren:
+    path: "model/rec_ren_resnet18_256x128_250116.rknn"
+  rec_ren_mobilenet:
+    path: "model/rec_ren_mobilenetv2_256x128_250116.rknn"
+  det_hand:
+    path: "model/det_hand_s_448x800_250110.rknn"
+  det_kx:
+    path: "model/det_kx_s_24_12_18.rknn"
+  rec_hand:
+    path: "model/rec_hand_1216_resnet18.rknn"
+  pose_ren:
+    path: "model/yolov8s-pose.rknn"
+  rec_kx_orient:
+    path: "model/rec_kx_orient_1207_resnet18.rknn"
+  pose_kx_hp:
+    path: "model/pose_kx_hp_s_24_12_12.rknn"
+  pose_kx_sz:
+    path: "model/pose_kx_sz_s_24_12_07.rknn"
+  obb_stick:
+    path: "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn"
+  rec_stat_door:
+    path: "model/cls_stat_door_model_resnet18_150108_i8.rknn"
