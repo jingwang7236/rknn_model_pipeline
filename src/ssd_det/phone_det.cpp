@@ -26,9 +26,10 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
     // int            model_len = 0;
     // unsigned char* model;
     object_detect_result_list result;
+    object_detect_result_list phone_result;
 
     const int num_class = 7;
-    float det_threshold = 0.2;
+    float det_threshold = 0.1;
     // const char* model_path = "model/HeaderDet.rknn";
 
     unsigned char* data = input_data.data;
@@ -63,21 +64,19 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
                 // 检测结果合并
                 // printf("patch result num: %d\n", patch_result.count);
                 for(int k = 0; k < patch_result.count; ++k){
-                    // std::cout << patch_result.results->score << std::endl;
-                    // std::cout << "01:patch result: " << patch_result.results[k].box.left << "," << patch_result.results[k].box.top << ","
-                    // << patch_result.results[k].box.right << "," << patch_result.results[k].box.bottom << std::endl;
+                    if (patch_result.results[k].cls_id != 0){
+                        continue;
+                    }
                     patch_result.results[k].box.left += j * patchWidth;
                     patch_result.results[k].box.top += i * patchHeight;
                     patch_result.results[k].box.right += j * patchWidth;
                     patch_result.results[k].box.bottom += i * patchHeight;
-                    // std::cout << "02:patch result: " << patch_result.results[k].box.left << "," << patch_result.results[k].box.top << ","
-                    // << patch_result.results[k].box.right << "," << patch_result.results[k].box.bottom << std::endl;
                     all_patch_result.results[count] = patch_result.results[k];
                     count ++;
                 }
             }
         }
-        // TODO: 中心区域进行推理
+        // 中心区域进行推理
         object_detect_result_list patch_result;
         float ctr_k = 0.5;
         cv::Rect roi(ctr_k * patchWidth, ctr_k * patchHeight, patchWidth, patchHeight);
@@ -86,15 +85,13 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
         // 检测结果合并
         // printf("patch result num: %d\n", patch_result.count);
         for(int k = 0; k < patch_result.count; ++k){
-            // std::cout << patch_result.results->score << std::endl;
-            // std::cout << "01:patch result: " << patch_result.results[k].box.left << "," << patch_result.results[k].box.top << ","
-            // << patch_result.results[k].box.right << "," << patch_result.results[k].box.bottom << std::endl;
+            if (patch_result.results[k].cls_id != 0){
+                continue;
+            }
             patch_result.results[k].box.left += ctr_k * patchWidth;
             patch_result.results[k].box.top += ctr_k * patchHeight;
             patch_result.results[k].box.right += ctr_k * patchWidth;
             patch_result.results[k].box.bottom += ctr_k * patchHeight;
-            // std::cout << "02:patch result: " << patch_result.results[k].box.left << "," << patch_result.results[k].box.top << ","
-            // << patch_result.results[k].box.right << "," << patch_result.results[k].box.bottom << std::endl;
             all_patch_result.results[count] = patch_result.results[k];
             count ++;
         }
@@ -130,6 +127,7 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
         // input image is raw image
         ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class, model_name.c_str());
     }
+
     // ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
     if (ret != 0) {
         if (enable_logger){
@@ -138,6 +136,17 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
         result.count = -1;
         return result;
     }
+    // 只保留result中cls_id=0的检测结果
+    int phone_result_count = 0;
+    for (int i = 0; i < result.count; ++i) {
+        if ((result.results[i].cls_id != 0) || (result.results[i].prop < det_threshold)) {
+            continue;
+        }
+        phone_result.results[phone_result_count] = result.results[i];
+        phone_result_count++;
+    }
+    phone_result.count = phone_result_count;
+
     if (enable_logger) {
         printf("Image size: %d x %d x %d\n", width, height, channel);
         if (scale_x > 2) {
@@ -164,7 +173,8 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
                 int rh = result.results[i].box.bottom - result.results[i].box.top;
 
                 cv::Rect box(rx, ry, rw, rh);
-                std::string text = "phone";
+                // std::string text = "phone";
+                std::string text = std::to_string(result.results[i].cls_id);
                 std::string score_str = std::to_string(result.results[i].prop);
                 text += " " + score_str;
                 cv::Scalar color(0, 255, 0);  // 绿色
@@ -176,12 +186,12 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
             if (result.results[i].prop < det_threshold) {
                 continue;
             }
-            printf("header @(%d %d %d %d) score=%f\n", result.results[i].box.left, result.results[i].box.top,
-                result.results[i].box.right, result.results[i].box.bottom, result.results[i].prop);
+            printf("cls_id=%d @(%d %d %d %d) score=%f\n", result.results[i].cls_id, result.results[i].box.left, 
+                result.results[i].box.top, result.results[i].box.right, result.results[i].box.bottom, result.results[i].prop);
         }
-        const char* image_path = "header_det_result.png";
+        const char* image_path = "phone_det_result.png";
         cv::imwrite(image_path, orig_img_clone);
         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
         }
-    return result;
+    return phone_result;
 }

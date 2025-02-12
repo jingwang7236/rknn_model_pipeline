@@ -129,7 +129,12 @@ std::vector<std::vector<float>> read_json_labels(const std::string& json_path, s
         float y1 = obj["points"][0][1].get<float>();
         float x2 = obj["points"][1][0].get<float>();
         float y2 = obj["points"][1][1].get<float>();
-        gt_box_list.push_back({static_cast<float>(label_id), x1, y1, x2, y2});
+        float xmin = std::min(x1, x2);
+        float ymin = std::min(y1, y2);
+        float xmax = std::max(x1, x2);
+        float ymax = std::max(y1, y2);
+        // printf("label_name: %s, label_id: %d, xmin: %f, ymin: %f, xmax: %f, ymax: %f\n", label_name.c_str(), label_id, xmin, ymin, xmax, ymax);
+        gt_box_list.push_back({static_cast<float>(label_id), xmin, ymin, xmax, ymax});
     }
     return gt_box_list;
 }
@@ -268,8 +273,8 @@ int DetModelMapCalculator(DetModelManager& modelManager, const std::string& mode
         if (input_data.data != nullptr){
             free(input_data.data);
         }
-        printf("Person Count Result: %zu\n", all_results[0].size());
-        printf("Processed image: %d\n", total_cnt);
+        // printf("Person Count Result: %zu\n", all_results[0].size());
+        // printf("Processed image: %d\n", total_cnt);
     }
     printf("Total images: %d\n", total_cnt);
     // 计算每个类别的 AP

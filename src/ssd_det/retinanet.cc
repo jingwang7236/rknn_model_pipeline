@@ -139,7 +139,7 @@ int quick_sort_indice_inverse(float *input, int left, int right, int *indices) {
 
 
 static int filterValidResult(float *scores, float *loc, const float boxPriors[][4], int model_in_h, int model_in_w,
-                             int filter_indice[], float *props, float threshold, const int num_results,const int num_class) {
+                             int filter_indice[], float *props, float threshold, const int num_results,const int num_class, int *class_ids) {
     int validCount = 0;
     const float MEAN[4] = {0, 0, 0, 0};
     const float VARIANCES[4] = {0.1, 0.1, 0.2, 0.2};
@@ -148,10 +148,20 @@ static int filterValidResult(float *scores, float *loc, const float boxPriors[][
     for (int i = 0; i < num_results; ++i) {
         // float face_score = scores[i * 7];
         // printf("%d num_class \n", num_class);
-        float score = scores[i * num_class];
-        if (score > threshold) {
+        float max_score = 0.0;
+        int max_score_id = 0;
+        for (int j = 0; j < num_class; j++) {
+            int offset = i * num_class + j;
+            if (scores[offset] > max_score) {
+                max_score = scores[offset];
+                max_score_id = j;
+            }
+        }
+        class_ids[i] = max_score_id;
+        // float score = scores[i * num_class];
+        if (max_score > threshold) {
             filter_indice[validCount] = i;
-            props[validCount] = score;
+            props[validCount] = max_score;
             // printf("%d %f box:(%f %f %f %f)\n", i, face_score, loc[i * 4 + 0], loc[i * 4 + 1], loc[i * 4 + 2], loc[i * 4 + 3]);
             //decode location to origin position
             float anchor_w = boxPriors[i][2] - boxPriors[i][0];
@@ -204,13 +214,14 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
     }
     int filter_indices[num_priors];
     float props[num_priors];
+    int class_ids[num_priors]; // 存放label_id
 
     memset(filter_indices, 0, sizeof(int)*num_priors);
     memset(props, 0, sizeof(float)*num_priors);
 
     // filter valid result
     int validCount = filterValidResult(scores, location, prior_ptr, app_ctx->model_height, app_ctx->model_width,
-                                       filter_indices, props, CONF_THRESHOLD, num_priors, num_class);
+                                       filter_indices, props, CONF_THRESHOLD, num_priors, num_class, class_ids);
 
     // printf("%d valid \n", validCount);
     quick_sort_indice_inverse(props, 0, validCount - 1, filter_indices);
@@ -239,6 +250,7 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
         result->results[last_count].box.right  = (int)(clamp(x2, 0, model_in_w) / letter_box->x_scale);
         result->results[last_count].box.bottom = (int)(clamp(y2, 0, model_in_h) / letter_box->y_scale);
         result->results[last_count].prop = props[i]; // Confidence
+        result->results[last_count].cls_id = class_ids[n];
         last_count++;
     }
     result->count = last_count;
