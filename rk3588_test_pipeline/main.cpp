@@ -480,7 +480,7 @@ int main(int argc, char **argv) {
 
         if (ret != 0)
         {
-            printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
+            printf("init_rec_stat_door_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
 
