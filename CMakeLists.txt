@@ -35,7 +35,9 @@ include_directories(${CMAKE_SOURCE_DIR}/include/utils)
 include_directories(${CMAKE_SOURCE_DIR}/include/stb_image)
 include_directories(${CMAKE_SOURCE_DIR}/include/outer_model)
 include_directories(${CMAKE_SOURCE_DIR}/include/ppocr)
+include_directories(${CMAKE_SOURCE_DIR}/include/yaml-cpp)
 
+set(yaml-cpp ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp/libyaml-cpp.a)
 
 
 # 添加静态库目标
@@ -43,17 +45,29 @@ add_subdirectory(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# 添加一个可执行文件目标，包括main.cpp和选定的retinaface实现文件
+# 添加一个可执行文件目标:main.cpp
 add_executable(${PROJECT_NAME}
     main.cpp
     )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(
+    ${PROJECT_NAME}
     rknn_model_pipeline
+    ${yaml-cpp}
 )
+
+# 查找并链接 yaml-cpp 库
+# find_package(yaml-cpp REQUIRED /home/firefly/miniconda3/lib)
+# if(yaml-cpp_FOUND)
+#     message(STATUS "yaml-cpp found")
+#     target_link_libraries(${PROJECT_NAME} yaml-cpp)
+# else()
+#     message(FATAL_ERROR "yaml-cpp not found")
+# endif()
 
 # 如果系统是Linux，设置使用pthread，链接Threads库
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message("Linux detected, setting pthread")
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     target_link_libraries(${PROJECT_NAME} Threads::Threads)
