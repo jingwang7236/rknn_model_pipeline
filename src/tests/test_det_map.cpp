@@ -254,8 +254,7 @@ int DetModelMapCalculator(DetModelManager& modelManager, const std::string& mode
             float y1 = result.results[i].box.top;
             float x2 = result.results[i].box.right;
             float y2 = result.results[i].box.bottom;
-            // int label_id = result.results[i].cls_id;
-            int label_id = 0;  // 默认是单分类检测,模型没有更新cls_id
+            int label_id = result.results[i].cls_id;
             pred_boxes.push_back({static_cast<float>(label_id), x1, y1, x2, y2});
             pred_scores.push_back(score);
         }
