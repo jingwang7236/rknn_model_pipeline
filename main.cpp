@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
     else if (std::string(model_name) == "det_gun") {
 
         /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_det_gun = { 640,640,0.6f,0.25f };
+        model_inference_params params_det_gun = { 640,384,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn";
@@ -227,7 +227,7 @@ int main(int argc, char **argv) {
         }
     }
     else if (std::string(model_name) == "det_stat_door") {
-        model_inference_params params_det_stat_door = { 640,640,0.6f,0.25f };
+        model_inference_params params_det_stat_door = { 640,384,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/jhpoc_1225_stat_door_det2_640_rk.rknn";
@@ -500,7 +500,7 @@ int main(int argc, char **argv) {
     else if (std::string(model_name) == "obb_stick") {
 
         /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_obb_stick = { 1024,1024,0.6f,0.25f };
+        model_inference_params params_obb_stick = { 640,384,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn";
@@ -517,7 +517,7 @@ int main(int argc, char **argv) {
 
         //print_rknn_app_context(rknn_app_ctx);
         auto start = std::chrono::high_resolution_clock::now();
-        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_det_gun, false, false); //推理
+        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_obb_stick, false, false); //推理
         auto end = std::chrono::high_resolution_clock::now();
         printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
