@@ -517,7 +517,7 @@ int main(int argc, char **argv) {
 
         //print_rknn_app_context(rknn_app_ctx);
         auto start = std::chrono::high_resolution_clock::now();
-        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_det_gun, false, false); //推理
+        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_obb_stick, false, false); //推理
         auto end = std::chrono::high_resolution_clock::now();
         printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
