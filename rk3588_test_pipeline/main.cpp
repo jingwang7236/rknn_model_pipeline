@@ -484,7 +484,7 @@ int main(int argc, char **argv) {
             return -1;
         }
 
-        resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, true);
         std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
         }
