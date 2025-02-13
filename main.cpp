@@ -537,9 +537,9 @@ int main(int argc, char **argv) {
         memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         ret = init_model(model_path, &rec_rknn_app_ctx);
 
-        if (ret != 0)
+        if (ret != 0) 
         {
-            printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
+            printf("init_rec_stat_door_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
         //mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
