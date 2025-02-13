@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
     }
     else if (std::string(model_name) == "det_knife"){
         model_inference_params params_det_knife = { 640,640,0.6f,0.25f };
-        rknn_app_context_t rknn_app_ctx;
+        rknn_app_context_t rknn_app_ctx; 
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/yolov8n_1105_det_knife_i8.rknn";
         const std::string model_path_str = model_node["path"].as<std::string>();
@@ -209,8 +209,14 @@ int main(int argc, char **argv) {
         rknn_app_ctx.is_quant = true;
 
         //print_rknn_app_context(rknn_app_ctx);
+        auto det_gun_start = std::chrono::high_resolution_clock::now();
 
-        object_detect_result_list result = inference_det_gun_model(&rknn_app_ctx, input_data, params_det_gun, false, true); //推理
+        object_detect_result_list result = inference_det_gun_model(&rknn_app_ctx, input_data, params_det_gun, false, false); //推理
+
+        auto det_gun_end = std::chrono::high_resolution_clock::now();
+
+        printf("det_gun cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(det_gun_start - det_gun_end).count() / 1000.0);
+
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -236,7 +242,12 @@ int main(int argc, char **argv) {
 
         print_rknn_app_context(rknn_app_ctx);
 
-        object_detect_result_list result = inference_det_stat_door_model(&rknn_app_ctx, input_data, params_det_stat_door, false, true); //推理
+        auto det_stat_door_start = std::chrono::high_resolution_clock::now();
+        object_detect_result_list result = inference_det_stat_door_model(&rknn_app_ctx, input_data, params_det_stat_door, false, false); //推理
+        auto det_stat_door_end = std::chrono::high_resolution_clock::now();
+
+        printf("det_stat_door cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(det_stat_door_start - det_stat_door_end).count() / 1000.0);
+
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -280,7 +291,7 @@ int main(int argc, char **argv) {
         auto end = std::chrono::high_resolution_clock::now();
         printf("inference_face_attr_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&det_rknn_app_ctx);  //释放
-        ret = release_model(&cls_rknn_app_ctx);
+     
     }
     else if (std::string(model_name) == "ppocr"){
         // const char* det_model_path = "model/ppocrv4_det.rknn";
@@ -479,7 +490,7 @@ int main(int argc, char **argv) {
     else if (std::string(model_name) == "obb_stick") {
 
         /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_det_gun = { 1024,1024,0.6f,0.25f };
+        model_inference_params params_obb_stick = { 1024,1024,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn";
@@ -496,7 +507,14 @@ int main(int argc, char **argv) {
 
         //print_rknn_app_context(rknn_app_ctx);
 
-        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_det_gun, false, true); //推理
+        auto obb_stick_start = std::chrono::high_resolution_clock::now();
+
+        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_obb_stick, false, false); //推理
+
+        auto obb_stick_end = std::chrono::high_resolution_clock::now();
+
+        printf("obb_stick cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(obb_stick_start - obb_stick_end).count() / 1000.0);
+
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -521,7 +539,13 @@ int main(int argc, char **argv) {
         }
         //mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
        // mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, cls_stat_door, true);
+        
+        auto rec_door_start = std::chrono::high_resolution_clock::now();
+
         resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+
+        auto rec_door_end = std::chrono::high_resolution_clock::now();
+        printf("rec_door cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(rec_door_end - rec_door_start).count() / 1000.0);
         std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
         }
