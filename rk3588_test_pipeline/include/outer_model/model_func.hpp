@@ -67,7 +67,9 @@ object_detect_pose_result_list inference_pose_kx_sz_model(rknn_app_context_t *ap
 object_detect_obb_result_list inference_obb_stick_model(rknn_app_context_t* app_ctx, det_model_input input_data, model_inference_params params_, bool det_by_square, bool enable_logger);
 
 /* rec status door */
-resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger);
+resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger);
+
+mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // 模型管理类
 class ClsModelManager{

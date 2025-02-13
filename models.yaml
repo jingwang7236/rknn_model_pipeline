@@ -13,8 +13,18 @@ models:
     path: "model/yolov8n_1105_det_knife_i8.rknn"
   det_gun:
     path: "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn"
+    infer_img_height: 640         #模型推理高度 [int]  根据模型名获得 
+    infer_img_width: 640          #模型推理宽度 [int]  根据模型名获得 
+    nms_threshold: 0.6           #NMS阈值 [float]
+    box_threshold: 0.25          #box得分阈值 [float]
+    qnt: true                     #量化标志 [bool]
   det_stat_door:
     path: "model/jhpoc_1225_stat_door_det2_640_rk.rknn"
+    infer_img_height: 640         #模型推理高度 [int]  根据模型名获得 
+    infer_img_width: 640          #模型推理宽度 [int]  根据模型名获得 
+    nms_threshold: 0.6           #NMS阈值 [float]
+    box_threshold: 0.25          #box得分阈值 [float]
+    qnt: false                    #量化标志 [bool]
   face_attr:
     det_path: "model/HeaderDet.rknn"
     cls_path: "model/FaceAttr.rknn"
@@ -39,7 +49,19 @@ models:
     path: "model/pose_kx_hp_s_24_12_12.rknn"
   pose_kx_sz:
     path: "model/pose_kx_sz_s_24_12_07.rknn"
+
   obb_stick:
     path: "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn"
+    infer_img_height: 1024        #模型推理高度 [int]  根据模型名获得 
+    infer_img_width: 1024         #模型推理宽度 [int]  根据模型名获得 
+    nms_threshold: 0.6           #NMS阈值 [float]
+    box_threshold: 0.25          #box得分阈值 [float]
+    qnt: true                     #量化标志 [bool]
+
   rec_stat_door:
-    path: "model/cls_stat_door_model_resnet18_150108_i8.rknn"
+    # path: "model/cls_stat_door_model_resnet18_150108_i8.rknn"
+    path: "model/cls_stat_door_res18_250217_256x128_i8.rknn"  #模型文件存放地址    任务_模型架构_日期_推理尺寸_[量化数据类型].[后缀]
+    # top: 1                      #模型softmax规则  一般无需修改
+    infer_img_height: 256         #模型推理高度 [int]  根据模型名获得 256x128
+    infer_img_width: 128          #模型推理宽度 [int]  根据模型名获得 256x128
+    qnt: true                     #量化标志 [bool]
