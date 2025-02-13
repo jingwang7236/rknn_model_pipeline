@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
         }
     }
     else if (std::string(model_name) == "det_stat_door") {
-        model_inference_params params_det_stat_door = { 640,640,0.6f,0.25f };
+        model_inference_params params_det_stat_door = { 640,384,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         const char* model_path = "model/jhpoc_1225_stat_door_det2_640_rk_i8.rknn";
@@ -448,7 +448,7 @@ int main(int argc, char **argv) {
     else if (std::string(model_name) == "obb_stick") {
 
         /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_det_gun = { 1024,1024,0.6f,0.25f };
+        model_inference_params params_det_gun = { 640,384,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         const char* model_path = "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn";
