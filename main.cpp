@@ -73,7 +73,10 @@ int main(int argc, char **argv) {
             printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-        object_detect_result_list result = inference_header_det_model(&rknn_app_ctx, input_data, true); //推理
+        auto start = std::chrono::high_resolution_clock::now();
+        object_detect_result_list result = inference_header_det_model(&rknn_app_ctx, input_data, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);  //释放
         if (ret != 0) {
             printf("release_retinanet_model fail! ret=%d\n", ret);
@@ -91,7 +94,10 @@ int main(int argc, char **argv) {
             printf("init_retinanet_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-        object_detect_result_list result = inference_phone_det_model(&rknn_app_ctx, input_data, true); //推理
+        auto start = std::chrono::high_resolution_clock::now();
+        object_detect_result_list result = inference_phone_det_model(&rknn_app_ctx, input_data, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);  //释放
         if (ret != 0) {
             printf("release_retinanet_model fail! ret=%d\n", ret);
@@ -109,7 +115,10 @@ int main(int argc, char **argv) {
             printf("init_retinaface_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-        retinaface_result result = inference_face_det_model(&rknn_app_ctx, input_data, true); //推理
+        auto start = std::chrono::high_resolution_clock::now();
+        retinaface_result result = inference_face_det_model(&rknn_app_ctx, input_data, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         if (ret != 0) {
             printf("release_retinaface_model fail! ret=%d\n", ret);
@@ -128,12 +137,10 @@ int main(int argc, char **argv) {
             printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-        printf("inference_coco_person_model start\n");
         auto start = std::chrono::high_resolution_clock::now();
-        object_detect_result_list result = inference_coco_person_det_model(&rknn_app_ctx, input_data, true); //推理
+        object_detect_result_list result = inference_coco_person_det_model(&rknn_app_ctx, input_data, false); //推理
         auto end = std::chrono::high_resolution_clock::now();
-        printf("inference_coco_person_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-        printf("inference_coco_person_model end\n");
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -151,12 +158,10 @@ int main(int argc, char **argv) {
             printf("init_person_det_model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-        printf("inference_person_det_model start\n");
         auto start = std::chrono::high_resolution_clock::now();
-        object_detect_result_list result = inference_person_det_model(&rknn_app_ctx, input_data, true); //推理
+        object_detect_result_list result = inference_person_det_model(&rknn_app_ctx, input_data, false); //推理
         auto end = std::chrono::high_resolution_clock::now();
-        printf("inference_person_det_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-        printf("inference_person_det_model end\n");
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -181,8 +186,10 @@ int main(int argc, char **argv) {
         rknn_app_ctx.is_quant = true;
 
         // print_rknn_app_context(rknn_app_ctx);
-        
-        object_detect_result_list result = inference_det_knife_model(&rknn_app_ctx, input_data, params_det_knife, false, true); //推理
+        auto start = std::chrono::high_resolution_clock::now();
+        object_detect_result_list result = inference_det_knife_model(&rknn_app_ctx, input_data, params_det_knife, false, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -209,8 +216,10 @@ int main(int argc, char **argv) {
         rknn_app_ctx.is_quant = true;
 
         //print_rknn_app_context(rknn_app_ctx);
-
-        object_detect_result_list result = inference_det_gun_model(&rknn_app_ctx, input_data, params_det_gun, false, true); //推理
+        auto start = std::chrono::high_resolution_clock::now();
+        object_detect_result_list result = inference_det_gun_model(&rknn_app_ctx, input_data, params_det_gun, false, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -235,8 +244,10 @@ int main(int argc, char **argv) {
         rknn_app_ctx.is_quant = false;
 
         print_rknn_app_context(rknn_app_ctx);
-
-        object_detect_result_list result = inference_det_stat_door_model(&rknn_app_ctx, input_data, params_det_stat_door, false, true); //推理
+        auto start = std::chrono::high_resolution_clock::now();
+        object_detect_result_list result = inference_det_stat_door_model(&rknn_app_ctx, input_data, params_det_stat_door, false, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -259,10 +270,7 @@ int main(int argc, char **argv) {
         const std::string cls_model_path_str = model_node["cls_path"].as<std::string>();
         const char* cls_model_path = cls_model_path_str.c_str();
         ret = init_model(cls_model_path, &cls_rknn_app_ctx);
-        auto start = std::chrono::high_resolution_clock::now();
-        object_detect_result_list det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, true); //头肩检测模型推理
-        auto det_end = std::chrono::high_resolution_clock::now();
-        printf("inference_header_det_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(det_end - start).count() / 1000.0);
+        object_detect_result_list det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, false); //头肩检测模型推理
         det_result.count = det_result.count;
         for (int i = 0; i < det_result.count; ++i) {
             box_rect header_box;  // header的box
@@ -272,13 +280,11 @@ int main(int argc, char **argv) {
             header_box.bottom = std::min(det_result.results[i].box.bottom, height);
             // 人脸属性模型
             auto cls_start = std::chrono::high_resolution_clock::now();
-            cls_model_result cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, true);
+            cls_model_result cls_result = inference_face_attr_model(&cls_rknn_app_ctx, input_data, header_box, false);
             auto cls_end = std::chrono::high_resolution_clock::now();
-            printf("single_face_attr_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(cls_end - cls_start).count() / 1000.0);
+            printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(cls_end - cls_start).count() / 1000.0);
 
         }
-        auto end = std::chrono::high_resolution_clock::now();
-        printf("inference_face_attr_model time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&det_rknn_app_ctx);  //释放
         ret = release_model(&cls_rknn_app_ctx);
     }
@@ -293,7 +299,10 @@ int main(int argc, char **argv) {
         memset(&rknn_app_ctx, 0, sizeof(ppocr_system_app_context));
         ret = init_model(det_model_path, &rknn_app_ctx.det_context);
         ret = init_model(rec_model_path, &rknn_app_ctx.rec_context);
-        ppocr_text_recog_array_result_t results = inference_ppocr_det_rec_model(&rknn_app_ctx, input_data, true);
+        auto start = std::chrono::high_resolution_clock::now();
+        ppocr_text_recog_array_result_t results = inference_ppocr_det_rec_model(&rknn_app_ctx, input_data, false);
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx.det_context);
         ret = release_model(&rknn_app_ctx.rec_context);
     }
@@ -354,9 +363,10 @@ int main(int argc, char **argv) {
 
         rknn_app_ctx.is_quant = true;
         // print_rknn_app_context(rknn_app_ctx);
-        
-        object_detect_result_list result = inference_det_hand_model(&rknn_app_ctx, input_data, false, true); //推理
-
+        auto start = std::chrono::high_resolution_clock::now();
+        object_detect_result_list result = inference_det_hand_model(&rknn_app_ctx, input_data, false, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         
         if (ret != 0){
@@ -378,9 +388,10 @@ int main(int argc, char **argv) {
 
         rknn_app_ctx.is_quant = true;
         // print_rknn_app_context(rknn_app_ctx);
-        
+        auto start = std::chrono::high_resolution_clock::now();
         object_detect_result_list result = inference_det_kx_model(&rknn_app_ctx, input_data, false); //推理
-
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         
         if (ret != 0){
@@ -401,8 +412,10 @@ int main(int argc, char **argv) {
             printf("init rec_hand model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-
+        auto start = std::chrono::high_resolution_clock::now();
         resnet_result rec_result = inference_rec_hand_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
@@ -419,8 +432,10 @@ int main(int argc, char **argv) {
             printf("init pose_ren model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-
+        auto start = std::chrono::high_resolution_clock::now();
         object_detect_pose_result_list pose_result = inference_pose_ren_model(&rec_rknn_app_ctx, input_data, false);
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rec_rknn_app_ctx);
     }
     else if(std::string(model_name) == "rec_kx_orient"){
@@ -437,8 +452,10 @@ int main(int argc, char **argv) {
             printf("init rec_kx_orient model fail! ret=%d model_path=%s\n", ret, model_path);
             return -1;
         }
-
+        auto start = std::chrono::high_resolution_clock::now();
         resnet_result rec_result = inference_rec_kx_orient_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         // std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
     }
@@ -455,8 +472,10 @@ int main(int argc, char **argv) {
            printf("init pose_kx_hp model fail! ret=%d model_path=%s\n", ret, model_path);
            return -1;
        }
-
+       auto start = std::chrono::high_resolution_clock::now();
        object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&rec_rknn_app_ctx, input_data, false);
+       auto end = std::chrono::high_resolution_clock::now();
+       printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
        ret = release_model(&rec_rknn_app_ctx);
     }
     else if(std::string(model_name) == "pose_kx_sz"){
@@ -472,8 +491,10 @@ int main(int argc, char **argv) {
            printf("init pose_kx_sz model fail! ret=%d model_path=%s\n", ret, model_path);
            return -1;
        }
-
+       auto start = std::chrono::high_resolution_clock::now();
        object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
+       auto end = std::chrono::high_resolution_clock::now();
+       printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
        ret = release_model(&rec_rknn_app_ctx);
     }
     else if (std::string(model_name) == "obb_stick") {
@@ -495,8 +516,10 @@ int main(int argc, char **argv) {
         rknn_app_ctx.is_quant = false;
 
         //print_rknn_app_context(rknn_app_ctx);
-
-        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_det_gun, false, true); //推理
+        auto start = std::chrono::high_resolution_clock::now();
+        object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_det_gun, false, false); //推理
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         ret = release_model(&rknn_app_ctx);
         if (ret != 0)
         {
@@ -521,7 +544,10 @@ int main(int argc, char **argv) {
         }
         //mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
        // mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, cls_stat_door, true);
+        auto start = std::chrono::high_resolution_clock::now(); 
         resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+        auto end = std::chrono::high_resolution_clock::now();
+        printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
         std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
         ret = release_model(&rec_rknn_app_ctx);
         }
