@@ -29,7 +29,7 @@ object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx,
     object_detect_result_list phone_result;
 
     const int num_class = 7;
-    float det_threshold = 0.1;
+    float det_threshold = 0.3;
     // const char* model_path = "model/HeaderDet.rknn";
 
     unsigned char* data = input_data.data;
