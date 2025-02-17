@@ -10,13 +10,15 @@
 int init_model(const char *model_path, rknn_app_context_t *app_ctx);
 int release_model(rknn_app_context_t *app_ctx);
 
-ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
+object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
-ssd_det_result inference_header_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
+object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
 retinaface_result inference_face_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
 cls_model_result inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger);
+
+object_detect_result_list inference_coco_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
 object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 
@@ -39,22 +41,28 @@ object_detect_result_list inference_det_stat_door_model(rknn_app_context_t* app_
 
 // resnet rec ren
 resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 mobilenet_result inference_rec_person_mobilenet_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+mobilenet_result inference_rec_person_mobilenet_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // det hand
 object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool det_by_square = false, bool enable_logger = false);
+object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, det_model_input input_data, model_inference_params params_, bool enable_logger = false);
 
 // det_kx
-object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false); 
+object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, det_model_input input_data, model_inference_params params_, bool enable_logger = false);
 
 // rec_hand
 resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // pose ren
 object_detect_pose_result_list inference_pose_ren_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
 
 // rec kx orient
 resnet_result inference_rec_kx_orient_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+resnet_result inference_rec_kx_orient_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // pose kx_hp
 object_detect_pose_result_list inference_pose_kx_hp_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
@@ -66,7 +74,9 @@ object_detect_pose_result_list inference_pose_kx_sz_model(rknn_app_context_t *ap
 object_detect_obb_result_list inference_obb_stick_model(rknn_app_context_t* app_ctx, det_model_input input_data, model_inference_params params_, bool det_by_square, bool enable_logger);
 
 /* rec status door */
-resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger);
+resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger);
+
+mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // 模型管理类
 class ClsModelManager{

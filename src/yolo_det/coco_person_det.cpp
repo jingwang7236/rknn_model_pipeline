@@ -19,7 +19,7 @@
                   Main Function
 -------------------------------------------*/
 
-object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
+object_detect_result_list inference_coco_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
     object_detect_result_list result;
     result.count = 0;
@@ -143,17 +143,5 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
         printf("Total person num: %d\n", result.count);
     }
     deinit_post_process();
-
-    // ret = release_yolov10_model(&rknn_app_ctx);
-    // if (ret != 0)
-    // {
-    //     printf("release_yolov10_model fail! ret=%d\n", ret);
-    // }
-
-    // if (src_image.virt_addr != NULL)
-    // {
-    //     free(src_image.virt_addr);
-
-    // }
     return result;
 }

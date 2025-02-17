@@ -12,11 +12,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include/outer_model  # 外部模型使用的头文件，提供给端侧使用
     ${CMAKE_SOURCE_DIR}/include/inter_model  # 内部模型使用的头文件
     ${CMAKE_SOURCE_DIR}/include/ppocr        # ppocr使用的头文件
-    ${CMAKE_SOURCE_DIR}/third_party/rknpu2/include  # 第三方库头文件
+    # ${CMAKE_SOURCE_DIR}/third_party/rknpu2/include  # 第三方库头文件
     ${CMAKE_SOURCE_DIR}/third_party/librga/include
     ${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/include
-    # ${CMAKE_SOURCE_DIR}/third_party/opencv/opencv-linux-aarch64/include
     ${OpenCV_INCLUDE_DIRS}  # 使用rk3588系统安装动态库地址
+    ${RKNN_RT_LIB_INCLUDE_DIRS}
 )
 
 # 获取所有子目录的头文件到HEADER变量中
@@ -33,15 +33,17 @@ file(GLOB_RECURSE SOURCE
     ${CMAKE_SOURCE_DIR}/src/utils/*.c*
     ${CMAKE_SOURCE_DIR}/src/ppocr/*.c*
     ${CMAKE_SOURCE_DIR}/src/resnet18/*.c*
-    ${CMAKE_SOURCE_DIR}/src/tests/*.c*  # 测试模型指标,包含分类模型的准确率和检测模型的map/pr
     ${CMAKE_SOURCE_DIR}/src/mobilenet/*.c*
+    ${CMAKE_SOURCE_DIR}/src/tests/*.c*  # 测试模型指标,包含分类模型的准确率和检测模型的map/pr
+    
     )
 message("HEADER: ${HEADER}")
 message("SOURCE: ${SOURCE}")
 
 add_library(
     rknn_model_pipeline
-    STATIC
+    STATIC  # 静态库
+    # SHARED #动态库
     ${HEADER}  # 自己调用的头文件全部打包在静态库中，提供给外部使用的头文件放在model_params.hpp和model_func.cpp中
     ${SOURCE}
 )
@@ -49,27 +51,16 @@ add_library(
 # 第三方动态库查找和链接
 find_package(OpenCV REQUIRED)
 message("OpenCV_LIBS:${OpenCV_LIBS}")
-# find_library(RKNN_RT_LIB NAMES rknnrt PATHS /usr/lib)
-# message("RKNN_RT_LIB:${RKNN_RT_LIB}")
+find_library(RKNN_RT_LIB NAMES rknnrt PATHS /usr/lib)
+message("RKNN_RT_LIB:${RKNN_RT_LIB}")
 # find_library(RGA_LIB NAMES rga PATHS /usr/lib)
 # message("RGA_LIB:${RGA_LIB}")
 
 # 手动指定静态库路径
-set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/third_party/rknpu2/Linux/aarch64/librknnrt.so)
+# set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/third_party/rknpu2/Linux/aarch64/librknnrt.so)
 set(RGA_LIB ${CMAKE_SOURCE_DIR}/third_party/librga/Linux/aarch64/librga.so)
 set(jpeg_turbo ${CMAKE_SOURCE_DIR}/third_party/jpeg_turbo/Linux/aarch64/libturbojpeg.a)
 
-# set(OpenCV_STATIC_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/opencv/opencv-linux-aarch64/lib)
-# set(OpenCV_STATIC_LIBS
-#     ${OpenCV_STATIC_LIB_PATH}/libopencv_core.a
-#     ${OpenCV_STATIC_LIB_PATH}/libopencv_imgcodecs.a
-#     ${OpenCV_STATIC_LIB_PATH}/libopencv_imgproc.a
-#     ${OpenCV_STATIC_LIB_PATH}/libopencv_calib3d.a
-#     ${OpenCV_STATIC_LIB_PATH}/libopencv_features2d.a
-#     ${OpenCV_STATIC_LIB_PATH}/libopencv_video.a
-#     ${OpenCV_STATIC_LIB_PATH}/libopencv_dnn.a
-# )
-# message("OpenCV_STATIC_LIBS:${OpenCV_STATIC_LIBS}")
 
 # 添加其他依赖库
 set(EXTRA_LIBS
@@ -92,7 +83,6 @@ target_link_libraries(
     ${RGA_LIB}
     ${jpeg_turbo}
     ${OpenCV_LIBS}
-    # ${OpenCV_STATIC_LIBS}
     ${EXTRA_LIBS}
 )
 

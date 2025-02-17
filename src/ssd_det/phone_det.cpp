@@ -18,16 +18,18 @@
  * @param logger:  是否打印日志
  * @param result:  返回结果
 */
-ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
+object_detect_result_list inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
+    std::string model_name = "phone_det";
     // rknn_context ctx = 0;
     int            ret;
     // int            model_len = 0;
     // unsigned char* model;
-    ssd_det_result result;
+    object_detect_result_list result;
+    object_detect_result_list phone_result;
 
     const int num_class = 7;
-    float det_threshold = 0.2;
+    float det_threshold = 0.3;
     // const char* model_path = "model/HeaderDet.rknn";
 
     unsigned char* data = input_data.data;
@@ -50,51 +52,47 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
         ret = -2; 
         int patchHeight = height / 2;
         int patchWidth = width / 2;
-        ssd_det_result all_patch_result;
+        object_detect_result_list all_patch_result;
          // 遍历四个角的patch并进行推理
         int count = 0;
         for (int i = 0; i < 2; ++i) { // 遍历上下两行
             for (int j = 0; j < 2; ++j) { // 遍历左右两列
-                ssd_det_result patch_result;
+                object_detect_result_list patch_result;
                 cv::Rect roi(j * patchWidth, i * patchHeight, patchWidth, patchHeight);
                 cv::Mat patch = orig_img(roi);
-                ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class);
+                ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class, model_name.c_str());
                 // 检测结果合并
                 // printf("patch result num: %d\n", patch_result.count);
                 for(int k = 0; k < patch_result.count; ++k){
-                    // std::cout << patch_result.object->score << std::endl;
-                    // std::cout << "01:patch result: " << patch_result.object[k].box.left << "," << patch_result.object[k].box.top << ","
-                    // << patch_result.object[k].box.right << "," << patch_result.object[k].box.bottom << std::endl;
-                    patch_result.object[k].box.left += j * patchWidth;
-                    patch_result.object[k].box.top += i * patchHeight;
-                    patch_result.object[k].box.right += j * patchWidth;
-                    patch_result.object[k].box.bottom += i * patchHeight;
-                    // std::cout << "02:patch result: " << patch_result.object[k].box.left << "," << patch_result.object[k].box.top << ","
-                    // << patch_result.object[k].box.right << "," << patch_result.object[k].box.bottom << std::endl;
-                    all_patch_result.object[count] = patch_result.object[k];
+                    if (patch_result.results[k].cls_id != 0){
+                        continue;
+                    }
+                    patch_result.results[k].box.left += j * patchWidth;
+                    patch_result.results[k].box.top += i * patchHeight;
+                    patch_result.results[k].box.right += j * patchWidth;
+                    patch_result.results[k].box.bottom += i * patchHeight;
+                    all_patch_result.results[count] = patch_result.results[k];
                     count ++;
                 }
             }
         }
-        // TODO: 中心区域进行推理
-        ssd_det_result patch_result;
+        // 中心区域进行推理
+        object_detect_result_list patch_result;
         float ctr_k = 0.5;
         cv::Rect roi(ctr_k * patchWidth, ctr_k * patchHeight, patchWidth, patchHeight);
         cv::Mat patch = orig_img(roi);
-        ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class);
+        ret = inference_retinanet_model(app_ctx, patch, &patch_result, num_class, model_name.c_str());
         // 检测结果合并
         // printf("patch result num: %d\n", patch_result.count);
         for(int k = 0; k < patch_result.count; ++k){
-            // std::cout << patch_result.object->score << std::endl;
-            // std::cout << "01:patch result: " << patch_result.object[k].box.left << "," << patch_result.object[k].box.top << ","
-            // << patch_result.object[k].box.right << "," << patch_result.object[k].box.bottom << std::endl;
-            patch_result.object[k].box.left += ctr_k * patchWidth;
-            patch_result.object[k].box.top += ctr_k * patchHeight;
-            patch_result.object[k].box.right += ctr_k * patchWidth;
-            patch_result.object[k].box.bottom += ctr_k * patchHeight;
-            // std::cout << "02:patch result: " << patch_result.object[k].box.left << "," << patch_result.object[k].box.top << ","
-            // << patch_result.object[k].box.right << "," << patch_result.object[k].box.bottom << std::endl;
-            all_patch_result.object[count] = patch_result.object[k];
+            if (patch_result.results[k].cls_id != 0){
+                continue;
+            }
+            patch_result.results[k].box.left += ctr_k * patchWidth;
+            patch_result.results[k].box.top += ctr_k * patchHeight;
+            patch_result.results[k].box.right += ctr_k * patchWidth;
+            patch_result.results[k].box.bottom += ctr_k * patchHeight;
+            all_patch_result.results[count] = patch_result.results[k];
             count ++;
         }
         all_patch_result.count = count;
@@ -103,16 +101,16 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
         int filter_indices[all_patch_result.count];
         float location[all_patch_result.count*4];
         for (int i = 0; i < all_patch_result.count; i++){
-            props[i] = all_patch_result.object[i].score;
+            props[i] = all_patch_result.results[i].prop;
             filter_indices[i] = i;
-            location[i*4] = all_patch_result.object[i].box.left;
-            location[i*4+1] = all_patch_result.object[i].box.top;
-            location[i*4+2] = all_patch_result.object[i].box.right;
-            location[i*4+3] = all_patch_result.object[i].box.bottom;
+            location[i*4] = all_patch_result.results[i].box.left;
+            location[i*4+1] = all_patch_result.results[i].box.top;
+            location[i*4+2] = all_patch_result.results[i].box.right;
+            location[i*4+3] = all_patch_result.results[i].box.bottom;
         }
         quick_sort_indice_inverse(props, 0, all_patch_result.count - 1, filter_indices);
         // printf("filter_indices: %d %d\n", filter_indices[0], filter_indices[1]);
-        nms(all_patch_result.count, location, filter_indices, 0.1, width, height);
+        nms(all_patch_result.count, location, filter_indices, 0.1);
         int last_count = 0;
         for (int i = 0; i < all_patch_result.count; ++i) {
             if (filter_indices[i] == -1 || props[i] < det_threshold) {
@@ -120,15 +118,16 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
                 continue;
             }
             int n = filter_indices[i];
-            result.object[last_count] = all_patch_result.object[n];
+            result.results[last_count] = all_patch_result.results[n];
             last_count++;
         }
         result.count = last_count;
         ret = 0;
     }else {
         // input image is raw image
-        ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
+        ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class, model_name.c_str());
     }
+
     // ret = inference_retinanet_model(app_ctx, orig_img, &result, num_class);
     if (ret != 0) {
         if (enable_logger){
@@ -137,6 +136,17 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
         result.count = -1;
         return result;
     }
+    // 只保留result中cls_id=0的检测结果
+    int phone_result_count = 0;
+    for (int i = 0; i < result.count; ++i) {
+        if ((result.results[i].cls_id != 0) || (result.results[i].prop < det_threshold)) {
+            continue;
+        }
+        phone_result.results[phone_result_count] = result.results[i];
+        phone_result_count++;
+    }
+    phone_result.count = phone_result_count;
+
     if (enable_logger) {
         printf("Image size: %d x %d x %d\n", width, height, channel);
         if (scale_x > 2) {
@@ -146,8 +156,8 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
         }
         printf("detect result num: %d\n", result.count);
         for (int i = 0; i < result.count; ++i) {
-            printf("phone @(%d %d %d %d) score=%f\n", result.object[i].box.left, result.object[i].box.top,
-                result.object[i].box.right, result.object[i].box.bottom, result.object[i].score);
+            printf("phone @(%d %d %d %d) score=%f\n", result.results[i].box.left, result.results[i].box.top,
+                result.results[i].box.right, result.results[i].box.bottom, result.results[i].prop);
         }
     }
     bool enable_draw_image = false; //画图,本地测试
@@ -157,14 +167,15 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
         // cv::imwrite("input.png", orig_img_clone);
         for (int i = 0; i < result.count; ++i) {
             if (enable_draw_image) {
-                int rx = result.object[i].box.left;
-                int ry = result.object[i].box.top;
-                int rw = result.object[i].box.right - result.object[i].box.left;
-                int rh = result.object[i].box.bottom - result.object[i].box.top;
+                int rx = result.results[i].box.left;
+                int ry = result.results[i].box.top;
+                int rw = result.results[i].box.right - result.results[i].box.left;
+                int rh = result.results[i].box.bottom - result.results[i].box.top;
 
                 cv::Rect box(rx, ry, rw, rh);
-                std::string text = "header";
-                std::string score_str = std::to_string(result.object[i].score);
+                // std::string text = "phone";
+                std::string text = std::to_string(result.results[i].cls_id);
+                std::string score_str = std::to_string(result.results[i].prop);
                 text += " " + score_str;
                 cv::Scalar color(0, 255, 0);  // 绿色
                 cv::rectangle(orig_img_clone, box, color, 2);
@@ -172,15 +183,15 @@ ssd_det_result inference_phone_det_model(rknn_app_context_t *app_ctx, det_model_
                 cv::putText(orig_img_clone, text, textOrg, cv::FONT_HERSHEY_SIMPLEX, 0.9, color, 2);
                 
             }
-            if (result.object[i].score < det_threshold) {
+            if (result.results[i].prop < det_threshold) {
                 continue;
             }
-            printf("header @(%d %d %d %d) score=%f\n", result.object[i].box.left, result.object[i].box.top,
-                result.object[i].box.right, result.object[i].box.bottom, result.object[i].score);
+            printf("cls_id=%d @(%d %d %d %d) score=%f\n", result.results[i].cls_id, result.results[i].box.left, 
+                result.results[i].box.top, result.results[i].box.right, result.results[i].box.bottom, result.results[i].prop);
         }
-        const char* image_path = "header_det_result.png";
+        const char* image_path = "phone_det_result.png";
         cv::imwrite(image_path, orig_img_clone);
         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
         }
-    return result;
+    return phone_result;
 }

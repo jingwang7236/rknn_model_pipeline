@@ -33,10 +33,17 @@ endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/include/outer_model)
+include_directories(${CMAKE_SOURCE_DIR}/include/utils)
+include_directories(${CMAKE_SOURCE_DIR}/include/ppocr)
+include_directories(${CMAKE_SOURCE_DIR}/include/stb_image)
+include_directories(${OpenCV_INCLUDE_DIRS})   # opencv
+include_directories(${RKNN_RT_LIB_INCLUDE_DIRS})  # rknn
+
 
 find_package(OpenCV REQUIRED)
-# message("OpenCV_DIR: ${OpenCV_DIR}")
 message("OpenCV_LIBS:${OpenCV_LIBS}")
+find_library(RKNN_RT_LIB NAMES rknnrt PATHS /usr/lib)
+message("RKNN_RT_LIB:${RKNN_RT_LIB}")
 
 # 添加一个可执行文件目标，包括main.cpp和选定的retinaface实现文件
 add_executable(${PROJECT_NAME}
@@ -44,7 +51,6 @@ add_executable(${PROJECT_NAME}
 )
 set(RGA_LIB ${CMAKE_SOURCE_DIR}/lib/librga.so)
 set(jpeg_turbo ${CMAKE_SOURCE_DIR}/lib/libturbojpeg.a)
-set(RKNN_RT_LIB ${CMAKE_SOURCE_DIR}/lib/librknnrt.so)
 set(rknn_model_pipeline ${CMAKE_SOURCE_DIR}/lib/librknn_model_pipeline.a)
 target_link_libraries(${PROJECT_NAME}
     ${rknn_model_pipeline}
@@ -85,4 +91,4 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h 
 
 # 设置调试标志
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)

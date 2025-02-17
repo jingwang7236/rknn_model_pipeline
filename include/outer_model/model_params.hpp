@@ -170,8 +170,8 @@ struct DetModelInfo {
 
 /* inference params */
 typedef struct model_inference_params {
-    int input_width;
     int input_height;
+    int input_width;
     float nms_threshold;
     float box_threshold;
 }model_inference_params;
@@ -182,6 +182,14 @@ typedef struct cls_model_inference_params {
     int img_width;
 }cls_model_inference_params;
 
+typedef struct pose_model_inference_params {
+    int input_height;
+    int input_width;
+    int kpt_nums;
+    float nms_threshold;
+    float box_threshold;
+}pose_model_inference_params;
+
 /* model classes */
 
 extern std::map<int, std::string> det_gun_category_map; /* {0, "gun"} */
@@ -189,6 +197,7 @@ extern std::map<int, std::string> det_knife_category_map; /* {0, "knife"} */
 extern std::map<int, std::string> det_stat_door_category_map; /* {0, "closed"},{1, "open"} */
 extern std::map<int, std::string> obb_stick_category_map; /* {0, "stick"} */
 extern std::map<int, std::string> cls_stat_door_category_map; /* {0, "closed"},{1, "open"},{2, "other"}  not door object */ 
+extern std::map<int, std::string> cls_stat_door_category_map_mobilenet;
 
 /*-------------------------------------------
             YOLO common start
