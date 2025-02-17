@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
     }
     else if(std::string(model_name) == "rec_ren"){
         // 分类初始化
-        const char* model_path = "model/rec_ren_resnet18_256x128_250116.rknn";
+        const char* model_path = "model/rec_ren_resnet18_x0.25_256x128_250122.rknn";
         rknn_app_context_t rec_rknn_app_ctx;
         memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         ret = init_model(model_path, &rec_rknn_app_ctx);  
@@ -281,7 +281,7 @@ int main(int argc, char **argv) {
     }
     else if(std::string(model_name) == "rec_ren_mobilenet"){
         // 分类初始化
-        const char* model_path = "model/rec_ren_mobilenetv2_256x128_250116.rknn";
+        const char* model_path = "model/rec_ren_mobilenetv2_x0.25_256x128_250118.rknn";
         rknn_app_context_t rec_rknn_app_ctx;
         memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         ret = init_model(model_path, &rec_rknn_app_ctx);  
@@ -323,7 +323,8 @@ int main(int argc, char **argv) {
     else if(std::string(model_name) == "det_kx"){
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-        const char* model_path = "model/det_kx_s_24_12_18.rknn";
+        // const char* model_path = "model/det_kx_s_24_12_18.rknn";
+        const char* model_path = "model/det_kx_yolov8s_S2_ft_044_best.rknn";
         ret = init_model(model_path, &rknn_app_ctx);
 
         if (ret != 0){
@@ -334,7 +335,7 @@ int main(int argc, char **argv) {
         rknn_app_ctx.is_quant = true;
         // print_rknn_app_context(rknn_app_ctx);
         
-        object_detect_result_list result = inference_det_kx_model(&rknn_app_ctx, input_data, false); //推理
+        object_detect_result_list result = inference_det_kx_model(&rknn_app_ctx, input_data, true); //推理
 
         ret = release_model(&rknn_app_ctx);
         

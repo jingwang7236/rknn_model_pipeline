@@ -16,7 +16,7 @@
                 Defines
 -------------------------------------------*/
 #define INPUT_WIDTH_DET_KX 640
-#define INPUT_HEIGHT_DET_KX 640
+#define INPUT_HEIGHT_DET_KX 384
 #define NMS_THRESH_DET_KX 0.7
 #define BOX_THRESH_DET_KX 0.25
 
@@ -56,7 +56,8 @@ object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, de
     auto convert_img = det_kx_image_preprocess.Convert(convertDataToCvMat(input_data));
     // cv::Mat img_rgb = cv::Mat::zeros(INPUT_WIDTH_DET_KX, INPUT_HEIGHT_DET_KX, convert_img->type());
     // convert_img->copyTo(img_rgb);
-    ret = inference_yolov8_model(app_ctx, convert_img->ptr<unsigned char>(), &od_results, det_kx_image_preprocess.get_letter_box(), NMS_THRESH_DET_KX, BOX_THRESH_DET_KX, enable_logger);
+    ret = inference_yolov8_model(app_ctx, convert_img->ptr<unsigned char>(), &od_results, det_kx_image_preprocess.get_letter_box(), 
+                                det_kx_category_map.size(), NMS_THRESH_DET_KX, BOX_THRESH_DET_KX, enable_logger);
 
     if (ret != 0) {
         printf("ERROR: det_kx model infer failed! ret=%d\n", ret);
