@@ -170,8 +170,8 @@ struct DetModelInfo {
 
 /* inference params */
 typedef struct model_inference_params {
-    int input_width;
     int input_height;
+    int input_width;
     float nms_threshold;
     float box_threshold;
 }model_inference_params;
