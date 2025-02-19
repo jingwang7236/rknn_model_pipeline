@@ -41,22 +41,28 @@ object_detect_result_list inference_det_stat_door_model(rknn_app_context_t* app_
 
 // resnet rec ren
 resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+resnet_result inference_rec_person_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 mobilenet_result inference_rec_person_mobilenet_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+mobilenet_result inference_rec_person_mobilenet_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // det hand
 object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool det_by_square = false, bool enable_logger = false);
+object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, det_model_input input_data, model_inference_params params_, bool enable_logger = false);
 
 // det_kx
-object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false); 
+object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+object_detect_result_list inference_det_kx_model(rknn_app_context_t *app_ctx, det_model_input input_data, model_inference_params params_, bool enable_logger = false);
 
 // rec_hand
 resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // pose ren
 object_detect_pose_result_list inference_pose_ren_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
 
 // rec kx orient
 resnet_result inference_rec_kx_orient_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
+resnet_result inference_rec_kx_orient_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
 // pose kx_hp
 object_detect_pose_result_list inference_pose_kx_hp_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger = false);
