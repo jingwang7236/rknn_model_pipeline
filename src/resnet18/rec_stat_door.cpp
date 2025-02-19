@@ -12,18 +12,23 @@
 #include "file_utils.h"
 #include "opencv2/opencv.hpp"
 #include "resnet18.h"
+#include "yolo_image_preprocess.h"
 #include "outer_model/model_func.hpp"
 #include "stb_image_resize2.h"
 #define READ_IMAGE_TYPE STBIR_RGB
 
 // cls_model_inference_params cls_stat_door = { 1, 320, 160 };
-std::map<int, std::string> cls_stat_door_category_map_mobilenet = { {0,"closed"},{1,"open"},{2,"other"} };
+std::map<int, std::string> cls_stat_door_category_map = { {0,"closed"},{1,"open"},{2,"other"} };
 
 /*-------------------------------------------
 				  Main Function
 -------------------------------------------*/
 
-resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params cls_stat_door, bool enable_logger = false)
+resnet_result inference_rec_stat_door_resnet18_model(
+	rknn_app_context_t* app_ctx, 
+	det_model_input input_data, 
+	cls_model_inference_params cls_stat_door, 
+	bool enable_logger = false)
 {
 	resnet_result od_results;
 	memset(&od_results, 0, sizeof(resnet_result));
@@ -73,3 +78,37 @@ resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx
 
 	return od_results;
 }
+
+resnet_result inference_rec_stat_door_resnet18_model_opencv(
+	rknn_app_context_t* app_ctx,
+	det_model_input input_data,
+	cls_model_inference_params params_,
+	bool enable_logger) {
+
+	/* 初始化 */
+	resnet_result od_results;
+	memset(&od_results, 0, sizeof(resnet_result));
+
+	/* 预处理resize */
+	ImagePreProcess cls_patch_image_preprocess(input_data.width, input_data.height, params_.img_width, params_.img_height);
+	auto convert_img = cls_patch_image_preprocess.Convert(convertDataToCvMat(input_data));
+
+	int ret = inference_resnet_model_opencv(app_ctx, convert_img->ptr<unsigned char>(), &od_results, params_.top_k);
+	
+	if (ret != 0)
+	{
+		printf("infer_rec_stat_door_resnet_model_opencv fail! ret=%d\n", ret);
+		return od_results;
+	}
+
+	/* 打印日志 */
+	if (enable_logger) {
+		if (!ret) {//推理成功才会打印日志
+
+			std::cout << "Class index: " << od_results.cls << ", Name: "<< cls_stat_door_category_map[od_results.cls] << ", Score: " << od_results.score << std::endl;
+		}
+	}
+
+	return od_results;
+}
+

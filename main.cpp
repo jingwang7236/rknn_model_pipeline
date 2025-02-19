@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 	int ret;
+	// bool open_logger = false;
 
 	const char* model_name = argv[1];
 	const char* image_path = argv[2];  // single image path or testset file path
@@ -36,7 +37,9 @@ int main(int argc, char** argv) {
 	// Load YAML configuration
 	YAML::Node config = YAML::LoadFile("models.yaml");
 	YAML::Node model_node = config["models"][model_name];
-	// bool open_logger = config["enable_log"].as<bool>();
+	YAML::Node env_settings = config["env_settings"];
+	//...etc.
+	bool open_logger = env_settings["enable_log"].as<bool>();
 
 	if (!model_node) {
 		std::cerr << "Unknown model_name: " << model_name << std::endl;
@@ -193,10 +196,12 @@ int main(int argc, char** argv) {
 		}
 
 		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
-
+		
+		/* 日志标志 */
+		bool print_logs = open_logger && model_node["log"].as<bool>();
 		// print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_result_list result = inference_det_knife_model(&rknn_app_ctx, input_data, params_det_knife, false, false); //推理
+		object_detect_result_list result = inference_det_knife_model(&rknn_app_ctx, input_data, params_det_knife, false, print_logs); //推理
 		auto end = std::chrono::high_resolution_clock::now();
 		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
 		ret = release_model(&rknn_app_ctx);
@@ -230,12 +235,12 @@ int main(int argc, char** argv) {
 
 		/* 量化标志 */
 		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
-		/* 日志标志 */
-		// bool print_logs = open_logger && (model_node["log"].as<float>());
-
+		/* 日志标志 */ 
+		bool print_logs = open_logger && model_node["log"].as<bool>();
+	
 		//print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_result_list result = inference_det_gun_model(&rknn_app_ctx, input_data, params_det_gun, false, false); //推理
+		object_detect_result_list result = inference_det_gun_model(&rknn_app_ctx, input_data, params_det_gun, false, print_logs); //推理
 		auto end = std::chrono::high_resolution_clock::now();
 		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
 		ret = release_model(&rknn_app_ctx);
@@ -268,9 +273,13 @@ int main(int argc, char** argv) {
 
 		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
 
+		/* 日志标志 */
+
+		bool print_logs = open_logger && model_node["log"].as<bool>();
+
 		print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_result_list result = inference_det_stat_door_model(&rknn_app_ctx, input_data, params_det_stat_door, false, false); //推理
+		object_detect_result_list result = inference_det_stat_door_model(&rknn_app_ctx, input_data, params_det_stat_door, false, print_logs); //推理
 		auto end = std::chrono::high_resolution_clock::now();
 		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
 		ret = release_model(&rknn_app_ctx);
@@ -332,195 +341,273 @@ int main(int argc, char** argv) {
 		ret = release_model(&rknn_app_ctx.rec_context);
 	}
 	else if (std::string(model_name) == "rec_ren") {
-		// 分类初始化
-		// const char* model_path = "model/rec_ren_resnet18_256x128_250116.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		rknn_app_context_t rec_rknn_app_ctx;
-		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		ret = init_model(model_path, &rec_rknn_app_ctx);
+
+		cls_model_inference_params params_rec_ren;
+		params_rec_ren.top_k = 1;
+		params_rec_ren.img_height = model_node["infer_img_height"].as<int>();
+		params_rec_ren.img_width = model_node["infer_img_width"].as<int>();
+
+		rknn_app_context_t rec_ren_rknn_app_ctx;
+		memset(&rec_ren_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &rec_ren_rknn_app_ctx);
 
 		if (ret != 0)
 		{
 			printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
+		rec_ren_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
+
 		auto rec_ren_start = std::chrono::high_resolution_clock::now();
-		resnet_result rec_result = inference_rec_person_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+		resnet_result rec_result = inference_rec_person_resnet18_model(&rec_ren_rknn_app_ctx, input_data, params_rec_ren, open_logger);
 		auto rec_ren_end = std::chrono::high_resolution_clock::now();
-		std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
-		printf("ren_ren cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(rec_ren_end - rec_ren_start).count() / 1000.0);
-		ret = release_model(&rec_rknn_app_ctx);
+
+		if (open_logger){
+			std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+			printf("ren_ren cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(rec_ren_end - rec_ren_start).count() / 1000.0);
+		}
+		ret = release_model(&rec_ren_rknn_app_ctx);
 	}
 	else if (std::string(model_name) == "rec_ren_mobilenet") {
-		// 分类初始化
-		// const char* model_path = "model/rec_ren_mobilenetv2_256x128_250116.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		rknn_app_context_t rec_rknn_app_ctx;
-		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		ret = init_model(model_path, &rec_rknn_app_ctx);
+
+		cls_model_inference_params params_rec_ren_mobilenet;
+		params_rec_ren_mobilenet.top_k = 1;
+		params_rec_ren_mobilenet.img_height = model_node["infer_img_height"].as<int>();
+		params_rec_ren_mobilenet.img_width = model_node["infer_img_width"].as<int>();
+
+		rknn_app_context_t rec_ren_mobilenet_rknn_app_ctx;
+		memset(&rec_ren_mobilenet_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &rec_ren_mobilenet_rknn_app_ctx);
 
 		if (ret != 0)
 		{
 			printf("init_rec_ren_model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
+		rec_ren_mobilenet_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
+
 		auto rec_ren_start = std::chrono::high_resolution_clock::now();
-		mobilenet_result rec_result = inference_rec_person_mobilenet_model(&rec_rknn_app_ctx, input_data, false);
+		mobilenet_result rec_result = inference_rec_person_mobilenet_model(&rec_ren_mobilenet_rknn_app_ctx, input_data, params_rec_ren_mobilenet, open_logger);
 		auto rec_ren_end = std::chrono::high_resolution_clock::now();
-		std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
-		printf("ren_ren_mobilenet cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(rec_ren_end - rec_ren_start).count() / 1000.0);
-		ret = release_model(&rec_rknn_app_ctx);
+
+		if (open_logger){
+			std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+			printf("ren_ren_mobilenet cost time: %.2f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(rec_ren_end - rec_ren_start).count() / 1000.0);
+		}
+		ret = release_model(&rec_ren_mobilenet_rknn_app_ctx);
 	}
 	else if (std::string(model_name) == "det_hand") {
-		rknn_app_context_t rknn_app_ctx;
-		memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		// const char* model_path = "model/det_hand_s_448x800_250110.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		ret = init_model(model_path, &rknn_app_ctx);
+		
+		model_inference_params params_det_hand;
+		params_det_hand.input_height = model_node["infer_img_height"].as<int>();
+		params_det_hand.input_width = model_node["infer_img_width"].as<int>();
+		params_det_hand.nms_threshold = model_node["nms_threshold"].as<float>();
+		params_det_hand.box_threshold = model_node["box_threshold"].as<float>();
+
+		rknn_app_context_t det_hand_rknn_app_ctx;
+		memset(&det_hand_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &det_hand_rknn_app_ctx);
 
 		if (ret != 0) {
 			printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
 
-		rknn_app_ctx.is_quant = true;
-		// print_rknn_app_context(rknn_app_ctx);
+		det_hand_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
+
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_result_list result = inference_det_hand_model(&rknn_app_ctx, input_data, false, false); //推理
+		object_detect_result_list result = inference_det_hand_model(&det_hand_rknn_app_ctx, input_data, params_det_hand, open_logger); //推理
 		auto end = std::chrono::high_resolution_clock::now();
-		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-		ret = release_model(&rknn_app_ctx);
+		
+		if (open_logger){
+			printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+		}
+		
+		ret = release_model(&det_hand_rknn_app_ctx);
 
 		if (ret != 0) {
 			printf("release_yolov8_model fail! ret=%d\n", ret);
 		}
 	}
 	else if (std::string(model_name) == "det_kx") {
-		rknn_app_context_t rknn_app_ctx;
-		memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		// const char* model_path = "model/det_kx_s_24_12_18.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		ret = init_model(model_path, &rknn_app_ctx);
+		
+		model_inference_params params_det_kx;
+		params_det_kx.input_height = model_node["infer_img_height"].as<int>();
+		params_det_kx.input_width = model_node["infer_img_width"].as<int>();
+		params_det_kx.nms_threshold = model_node["nms_threshold"].as<float>();
+		params_det_kx.box_threshold = model_node["box_threshold"].as<float>();
+
+		rknn_app_context_t det_kx_rknn_app_ctx;
+		memset(&det_kx_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &det_kx_rknn_app_ctx);
 
 		if (ret != 0) {
 			printf("init_yolov8_model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
 
-		rknn_app_ctx.is_quant = true;
-		// print_rknn_app_context(rknn_app_ctx);
+		det_kx_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
+
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_result_list result = inference_det_kx_model(&rknn_app_ctx, input_data, false); //推理
+		object_detect_result_list result = inference_det_kx_model(&det_kx_rknn_app_ctx, input_data, params_det_kx, open_logger); //推理
 		auto end = std::chrono::high_resolution_clock::now();
-		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-		ret = release_model(&rknn_app_ctx);
+
+		if (open_logger){
+			printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+		}
+
+		ret = release_model(&det_kx_rknn_app_ctx);
 
 		if (ret != 0) {
 			printf("release_yolov8_model fail! ret=%d\n", ret);
 		}
 	}
 	else if (std::string(model_name) == "rec_hand") {
-		// 分类初始化
-		// const char* model_path = "model/rec_hand_1216_resnet18.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		rknn_app_context_t rec_rknn_app_ctx;
-		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		ret = init_model(model_path, &rec_rknn_app_ctx);
+
+		cls_model_inference_params params_rec_hand;
+		params_rec_hand.top_k = 1;
+		params_rec_hand.img_height = model_node["infer_img_height"].as<int>();
+		params_rec_hand.img_width = model_node["infer_img_width"].as<int>();
+
+		rknn_app_context_t rec_hand_rknn_app_ctx;
+		memset(&rec_hand_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &rec_hand_rknn_app_ctx);
 
 		if (ret != 0)
 		{
 			printf("init rec_hand model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
+		rec_hand_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
+
 		auto start = std::chrono::high_resolution_clock::now();
-		resnet_result rec_result = inference_rec_hand_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+		resnet_result rec_result = inference_rec_hand_resnet18_model(&rec_hand_rknn_app_ctx, input_data, params_rec_hand, open_logger);
 		auto end = std::chrono::high_resolution_clock::now();
-		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-		// std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
-		ret = release_model(&rec_rknn_app_ctx);
+		
+		if (open_logger){
+			printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+			std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+		}
+		
+		ret = release_model(&rec_hand_rknn_app_ctx);
 	}
 	else if (std::string(model_name) == "pose_ren") {
-		// 分类初始化
-		// const char* model_path = "model/yolov8s-pose.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		rknn_app_context_t rec_rknn_app_ctx;
-		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		ret = init_model(model_path, &rec_rknn_app_ctx);
+		
+		// pose_model_inference_params params_pose_ren;
+		// params_pose_ren.input_height = model_node["infer_img_height"].as<int>();
+		// params_pose_ren.input_width = model_node["infer_img_width"].as<int>();
+		// params_pose_ren.kpt_nums = model_node["kpt_nums"].as<int>();
+		// params_pose_ren.nms_threshold = model_node["nms_threshold"].as<float>();
+		// params_pose_ren.box_threshold = model_node["box_threshold"].as<float>();
+
+		rknn_app_context_t pose_ren_rknn_app_ctx;
+		memset(&pose_ren_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &pose_ren_rknn_app_ctx);
 
 		if (ret != 0) {
 			printf("init pose_ren model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
+
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_pose_result_list pose_result = inference_pose_ren_model(&rec_rknn_app_ctx, input_data, false);
+		object_detect_pose_result_list pose_result = inference_pose_ren_model(&pose_ren_rknn_app_ctx, input_data, open_logger);
 		auto end = std::chrono::high_resolution_clock::now();
-		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-		ret = release_model(&rec_rknn_app_ctx);
+		
+		if (open_logger){
+			printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+		}
+
+		ret = release_model(&pose_ren_rknn_app_ctx);
 	}
 	else if (std::string(model_name) == "rec_kx_orient") {
-		// 分类初始化
-		// const char* model_path = "model/rec_kx_orient_1207_resnet18.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		rknn_app_context_t rec_rknn_app_ctx;
-		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		ret = init_model(model_path, &rec_rknn_app_ctx);
+
+		cls_model_inference_params params_rec_kx_orient;
+		params_rec_kx_orient.top_k = 1;
+		params_rec_kx_orient.img_height = model_node["infer_img_height"].as<int>();
+		params_rec_kx_orient.img_width = model_node["infer_img_width"].as<int>();
+
+		rknn_app_context_t rec_kx_orient_rknn_app_ctx;
+		memset(&rec_kx_orient_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &rec_kx_orient_rknn_app_ctx);
 
 		if (ret != 0)
 		{
 			printf("init rec_kx_orient model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
+
+		rec_kx_orient_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
+
 		auto start = std::chrono::high_resolution_clock::now();
-		resnet_result rec_result = inference_rec_kx_orient_resnet18_model(&rec_rknn_app_ctx, input_data, false);
+		resnet_result rec_result = inference_rec_kx_orient_resnet18_model(&rec_kx_orient_rknn_app_ctx, input_data, params_rec_kx_orient, open_logger);
 		auto end = std::chrono::high_resolution_clock::now();
-		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-		// std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
-		ret = release_model(&rec_rknn_app_ctx);
+
+		if (open_logger){
+			printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+			std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
+		}
+		
+		ret = release_model(&rec_kx_orient_rknn_app_ctx);
 	}
 	else if (std::string(model_name) == "pose_kx_hp") {
-		// 分类初始化
-	 //    const char* model_path = "model/pose_kx_hp_s_24_12_12.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		rknn_app_context_t rec_rknn_app_ctx;
-		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		ret = init_model(model_path, &rec_rknn_app_ctx);
+		
+		rknn_app_context_t pose_kx_hp_rknn_app_ctx;
+		memset(&pose_kx_hp_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &pose_kx_hp_rknn_app_ctx);
 
 		if (ret != 0) {
 			printf("init pose_kx_hp model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
+
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&rec_rknn_app_ctx, input_data, false);
+		object_detect_pose_result_list pose_result = inference_pose_kx_hp_model(&pose_kx_hp_rknn_app_ctx, input_data, open_logger);
 		auto end = std::chrono::high_resolution_clock::now();
-		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-		ret = release_model(&rec_rknn_app_ctx);
+		
+		if (open_logger){
+			printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+		}
+
+		ret = release_model(&pose_kx_hp_rknn_app_ctx);
 	}
 	else if (std::string(model_name) == "pose_kx_sz") {
-		// 分类初始化
-	 //    const char* model_path = "model/pose_kx_sz_s_24_12_07.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		rknn_app_context_t rec_rknn_app_ctx;
-		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		ret = init_model(model_path, &rec_rknn_app_ctx);
+
+		rknn_app_context_t pose_kx_sz_rknn_app_ctx;
+		memset(&pose_kx_sz_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+		ret = init_model(model_path, &pose_kx_sz_rknn_app_ctx);
 
 		if (ret != 0) {
 			printf("init pose_kx_sz model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
+
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&rec_rknn_app_ctx, input_data, false);
+		object_detect_pose_result_list pose_result = inference_pose_kx_sz_model(&pose_kx_sz_rknn_app_ctx, input_data, open_logger);
 		auto end = std::chrono::high_resolution_clock::now();
-		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
-		ret = release_model(&rec_rknn_app_ctx);
+		
+		if (open_logger){
+			printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
+		}
+
+		ret = release_model(&pose_kx_sz_rknn_app_ctx);
 	}
 	else if (std::string(model_name) == "obb_stick") {
 
@@ -548,9 +635,12 @@ int main(int argc, char** argv) {
 
 		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
 
+		/* 日志标志 */
+		bool print_logs = open_logger && model_node["log"].as<bool>();
+
 		//print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
-		object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_obb_stick, false, false); //推理
+		object_detect_obb_result_list result = inference_obb_stick_model(&rknn_app_ctx, input_data, params_obb_stick, false, print_logs); //推理
 		auto end = std::chrono::high_resolution_clock::now();
 		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
 		ret = release_model(&rknn_app_ctx);
@@ -566,10 +656,10 @@ int main(int argc, char** argv) {
 		const char* model_path = model_path_str.c_str();
 		/* 获取模型推理时尺寸 */
 		
-		cls_model_inference_params cls_stat_door;
-		cls_stat_door.top_k = 1;
-		cls_stat_door.img_height = model_node["infer_img_height"].as<int>();
-		cls_stat_door.img_width = model_node["infer_img_width"].as<int>();
+		cls_model_inference_params params_cls_stat_door;
+		params_cls_stat_door.top_k = 1;
+		params_cls_stat_door.img_height = model_node["infer_img_height"].as<int>();
+		params_cls_stat_door.img_width = model_node["infer_img_width"].as<int>();
 
 		rknn_app_context_t rec_rknn_app_ctx;
 		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
@@ -581,10 +671,16 @@ int main(int argc, char** argv) {
 			return -1;
 		}
 		rec_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
-		//mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
-	   // mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, cls_stat_door, true);
+
+		/* 日志标志 */
+		bool print_logs = open_logger && model_node["log"].as<bool>();
+
+		// std::cout << open_logger << model_node["log"].as<bool>() << print_logs;
+		// mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
+	    // mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, params_cls_stat_door, true);
 		auto start = std::chrono::high_resolution_clock::now();
-		resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, cls_stat_door, false);
+		// resnet_result rec_result = inference_rec_stat_door_resnet18_model(&rec_rknn_app_ctx, input_data, params_cls_stat_door, print_logs);
+		resnet_result rec_result = inference_rec_stat_door_resnet18_model_opencv(&rec_rknn_app_ctx, input_data, params_cls_stat_door, print_logs);
 		auto end = std::chrono::high_resolution_clock::now();
 		printf("time: %f ms\n", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1000.0);
 		std::cout << "Class index: " << rec_result.cls << ", Score: " << rec_result.score << std::endl;
