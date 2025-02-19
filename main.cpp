@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
 	// Load YAML configuration
 	YAML::Node config = YAML::LoadFile("models.yaml");
 	YAML::Node model_node = config["models"][model_name];
+	// bool open_logger = config["enable_log"].as<bool>();
 
 	if (!model_node) {
 		std::cerr << "Unknown model_name: " << model_name << std::endl;
@@ -171,13 +172,20 @@ int main(int argc, char** argv) {
 		}
 	}
 	else if (std::string(model_name) == "det_knife") {
-		model_inference_params params_det_knife = { 640,640,0.6f,0.25f };
+		
 		rknn_app_context_t rknn_app_ctx;
 		memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-		// const char* model_path = "model/yolov8n_1105_det_knife_i8.rknn";
+		
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		//const char* label_txt_path = "model/classes_knife.txt";
+		
+		model_inference_params params_det_knife;
+		params_det_knife.input_height = model_node["infer_img_height"].as<int>();
+		params_det_knife.input_width = model_node["infer_img_width"].as<int>();
+		params_det_knife.nms_threshold = model_node["nms_threshold"].as<float>();
+		params_det_knife.box_threshold = model_node["box_threshold"].as<float>();
+		
+
 		ret = init_model(model_path, &rknn_app_ctx);
 		if (ret != 0)
 		{
@@ -185,7 +193,7 @@ int main(int argc, char** argv) {
 			return -1;
 		}
 
-		rknn_app_ctx.is_quant = true;
+		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
 
 		// print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
@@ -203,14 +211,14 @@ int main(int argc, char** argv) {
 		/* 获取模型推理时尺寸 */
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		int model_img_height = model_node["infer_img_height"].as<int>();
-		int model_img_width = model_node["infer_img_width"].as<int>();
-		float nms_threshold = model_node["nms_threshold"].as<float>();
-		float box_threshold = model_node["box_threshold"].as<float>();
-		bool flag_qnt = model_node["qnt"].as<bool>();
-
+		
 		/* 推理参数 width height nms_ths box_ths*/
-		model_inference_params params_det_gun = { model_img_height,model_img_width,nms_threshold,box_threshold };
+		model_inference_params params_det_gun;
+		params_det_gun.input_height = model_node["infer_img_height"].as<int>();
+		params_det_gun.input_width = model_node["infer_img_width"].as<int>();
+		params_det_gun.nms_threshold = model_node["nms_threshold"].as<float>();
+		params_det_gun.box_threshold = model_node["box_threshold"].as<float>();
+		
 		rknn_app_context_t rknn_app_ctx;
 		memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
 
@@ -221,7 +229,10 @@ int main(int argc, char** argv) {
 			return -1;
 		}
 
-		rknn_app_ctx.is_quant = flag_qnt;
+		/* 量化标志 */
+		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
+		/* 日志标志 */
+		// bool print_logs = open_logger && (model_node["log"].as<float>());
 
 		//print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
@@ -239,13 +250,13 @@ int main(int argc, char** argv) {
 		// const char* model_path = "model/jhpoc_1225_stat_door_det2_640_rk.rknn";
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
-		int model_img_height = model_node["infer_img_height"].as<int>();
-		int model_img_width = model_node["infer_img_width"].as<int>();
-		float nms_threshold = model_node["nms_threshold"].as<float>();
-		float box_threshold = model_node["box_threshold"].as<float>();
-		bool flag_qnt = model_node["qnt"].as<bool>();
+		
+		model_inference_params params_det_stat_door;
+		params_det_stat_door.input_height = model_node["infer_img_height"].as<int>();
+		params_det_stat_door.input_width = model_node["infer_img_width"].as<int>();
+		params_det_stat_door.nms_threshold = model_node["nms_threshold"].as<float>();
+		params_det_stat_door.box_threshold = model_node["box_threshold"].as<float>();
 
-		model_inference_params params_det_stat_door = { model_img_height,model_img_width,nms_threshold,box_threshold };
 		rknn_app_context_t rknn_app_ctx;
 		memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
 
@@ -256,7 +267,7 @@ int main(int argc, char** argv) {
 			return -1;
 		}
 
-		rknn_app_ctx.is_quant = flag_qnt;
+		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
 
 		print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
@@ -596,14 +607,14 @@ int main(int argc, char** argv) {
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
 		/* 获取模型推理时尺寸 */
-		int model_img_height = model_node["infer_img_height"].as<int>();
-		int model_img_width = model_node["infer_img_width"].as<int>();
-		float nms_threshold = model_node["nms_threshold"].as<float>();
-		float box_threshold = model_node["box_threshold"].as<float>();
-		bool flag_qnt = model_node["qnt"].as<bool>();
-
 		/* 推理参数 width height nms_ths box_ths*/
-		model_inference_params params_obb_stick = { model_img_height,model_img_width,nms_threshold,box_threshold };
+		// model_inference_params params_obb_stick = { model_img_height,model_img_width,nms_threshold,box_threshold };
+		model_inference_params params_obb_stick;
+		params_obb_stick.input_height = model_node["infer_img_height"].as<int>();
+		params_obb_stick.input_width = model_node["infer_img_width"].as<int>();
+		params_obb_stick.nms_threshold = model_node["nms_threshold"].as<float>();
+		params_obb_stick.box_threshold = model_node["box_threshold"].as<float>();
+
 		rknn_app_context_t rknn_app_ctx;
 		memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
 
@@ -614,7 +625,7 @@ int main(int argc, char** argv) {
 			return -1;
 		}
 
-		rknn_app_ctx.is_quant = flag_qnt;
+		rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
 
 		//print_rknn_app_context(rknn_app_ctx);
 		auto start = std::chrono::high_resolution_clock::now();
@@ -633,11 +644,11 @@ int main(int argc, char** argv) {
 		const std::string model_path_str = model_node["path"].as<std::string>();
 		const char* model_path = model_path_str.c_str();
 		/* 获取模型推理时尺寸 */
-		int model_img_height = model_node["infer_img_height"].as<int>();
-		int model_img_width = model_node["infer_img_width"].as<int>();
-		bool flag_qnt = model_node["qnt"].as<bool>();
-		// std::cout << "test_infet_size" << model_img_height << model_img_width << std::endl;
-		cls_model_inference_params cls_stat_door = { 1, model_img_height, model_img_width };
+		
+		cls_model_inference_params cls_stat_door;
+		cls_stat_door.top_k = 1;
+		cls_stat_door.img_height = model_node["infer_img_height"].as<int>();
+		cls_stat_door.img_width = model_node["infer_img_width"].as<int>();
 
 		rknn_app_context_t rec_rknn_app_ctx;
 		memset(&rec_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
@@ -648,7 +659,7 @@ int main(int argc, char** argv) {
 			printf("init_rec_stat_door_model fail! ret=%d model_path=%s\n", ret, model_path);
 			return -1;
 		}
-		rec_rknn_app_ctx.is_quant = flag_qnt;
+		rec_rknn_app_ctx.is_quant = model_node["qnt"].as<bool>();
 		//mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
 	   // mobilenet_result rec_result = inference_rec_stat_door_mobilenetv3_model(&rec_rknn_app_ctx, input_data, cls_stat_door, true);
 		auto start = std::chrono::high_resolution_clock::now();
