@@ -17,7 +17,7 @@
 #define READ_IMAGE_TYPE STBIR_RGB
 
 
-std::map<int, std::string> cls_stat_door_category_map_mobilenet = { {0,"closed"},{1,"open"},{2,"other"} };
+// std::map<int, std::string> cls_stat_door_category_map_mobilenet = { {0,"closed"},{1,"open"},{2,"other"} };
 
 /*-------------------------------------------
 				  Main Function

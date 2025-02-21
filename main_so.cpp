@@ -24,14 +24,12 @@ typedef object_detect_result_list (*InferenceSSDDetModelFunc)(rknn_app_context_t
 typedef cls_model_result (*InferenceFaceClsModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger);
 // ppocr 模型:ppocr
 typedef ppocr_text_recog_array_result_t (*InferencePPOCRModelFunc)(ppocr_system_app_context *app_ctx, det_model_input input_data, bool enable_logger);
-// yolo_det 模型: det_kx
-typedef object_detect_result_list (*InferenceYOLODetModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
-// yolo2_det 模型, 4个输入参数: hand_det
-typedef object_detect_result_list (*InferenceYOLO2DetModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, bool det_by_square, bool enable_logger);
-// yolo3_det 模型, 5个输入参数: det_knife
-typedef object_detect_result_list (*InferenceYOLO3DetModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, model_inference_params params_, bool det_by_square, bool enable_logger);
+// yolo_det 模型(4个参数): det_kx/det_hand
+typedef object_detect_result_list (*InferenceYOLODetModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, model_inference_params params_, bool enable_logger);
+// yolo2_det 模型, 5个输入参数: det_knife/det_stat_door/det_gun
+typedef object_detect_result_list (*InferenceYOLO2DetModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, model_inference_params params_, bool det_by_square, bool enable_logger);
 // res_ren 分类模型:rec_ren/rec_ren_mobilenet/rec_kx_orient/rec_stat_door
-typedef resnet_result (*InferenceResRecModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
+typedef resnet_result (*InferenceResRecModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params, bool enable_logger);
 // pose 模型: pose_ren/pose_kx_hp/pose_kx_sz
 typedef object_detect_pose_result_list (*InferencePoseModelFunc)(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger);
 //detect_obb 模型：obb_stick
@@ -152,6 +150,12 @@ int main(int argc, char **argv) {
             std::cerr << "InitModel failed" << std::endl;
             return ret;
         }
+        // 如果is_quant存在
+        if (model_node["is_quant"]){
+            const std::string is_quant_str = model_node["is_quant"].as<std::string>();
+            bool is_quant = (is_quant_str == "true");
+            rknn_app_ctx.is_quant = is_quant;
+        }
         if (function_type_str == "ssd_det") {
             const std::string enable_log_str = model_node["enable_log"].as<std::string>();
             bool enable_log = (enable_log_str == "true" || enable_log_str == "True");
@@ -197,6 +201,11 @@ int main(int argc, char **argv) {
         }else if (function_type_str == "yolo_det"){
             const std::string enable_log_str = model_node["enable_log"].as<std::string>();
             bool enable_log = (enable_log_str == "true" || enable_log_str == "True");
+            model_inference_params params;
+            params.input_height = model_node["params"]["input_height"].as<int>();
+            params.input_width = model_node["params"]["input_width"].as<int>();
+            params.nms_threshold = model_node["params"]["nms_threshold"].as<float>();
+            params.box_threshold = model_node["params"]["box_threshold"].as<float>();
             InferenceYOLODetModelFunc inference_model = (InferenceYOLODetModelFunc)dlsym(handle, func_name);
             const char* dlsym_error = dlerror();
             if (dlsym_error) {
@@ -204,34 +213,16 @@ int main(int argc, char **argv) {
                 dlclose(handle);
                 return 1;
             }
-            object_detect_result_list result = inference_model(&rknn_app_ctx, input_data, enable_log);
-        }
-        else if (function_type_str == "yolo2_det"){
+            object_detect_result_list result = inference_model(&rknn_app_ctx, input_data, params, enable_log);
+        } else if (function_type_str == "yolo2_det"){
             const std::string enable_log_str = model_node["enable_log"].as<std::string>();
             bool enable_log = (enable_log_str == "true" || enable_log_str == "True");
-            const std::string is_quant_str = model_node["is_quant"].as<std::string>();
-            bool is_quant = (is_quant_str == "true");
-            rknn_app_ctx.is_quant = is_quant;
-            InferenceYOLO2DetModelFunc inference_model = (InferenceYOLO2DetModelFunc)dlsym(handle, func_name);
-            const char* dlsym_error = dlerror();
-            if (dlsym_error) {
-                std::cerr << "Cannot load symbol '" << func_name << "': " << dlsym_error << std::endl;
-                dlclose(handle);
-                return 1;
-            }
-            object_detect_result_list result = inference_model(&rknn_app_ctx, input_data, false, enable_log);
-        } else if (function_type_str == "yolo3_det"){
-            const std::string enable_log_str = model_node["enable_log"].as<std::string>();
-            bool enable_log = (enable_log_str == "true" || enable_log_str == "True");
-            const std::string is_quant_str = model_node["is_quant"].as<std::string>();
-            bool is_quant = (is_quant_str == "true" || is_quant_str == "True");
-            rknn_app_ctx.is_quant = is_quant;
             model_inference_params params;
             params.input_height = model_node["params"]["input_height"].as<int>();
             params.input_width = model_node["params"]["input_width"].as<int>();
             params.nms_threshold = model_node["params"]["nms_threshold"].as<float>();
             params.box_threshold = model_node["params"]["box_threshold"].as<float>();
-            InferenceYOLO3DetModelFunc inference_model = (InferenceYOLO3DetModelFunc)dlsym(handle, func_name);
+            InferenceYOLO2DetModelFunc inference_model = (InferenceYOLO2DetModelFunc)dlsym(handle, func_name);
             const char* dlsym_error = dlerror();
             if (dlsym_error) {
                 std::cerr << "Cannot load symbol '" << func_name << "': " << dlsym_error << std::endl;
@@ -243,6 +234,10 @@ int main(int argc, char **argv) {
         else if (function_type_str == "res_rec"){
             const std::string enable_log_str = model_node["enable_log"].as<std::string>();
             bool enable_log = (enable_log_str == "true" || enable_log_str == "True");
+            cls_model_inference_params params;
+            params.top_k = 1;
+            params.img_height = model_node["params"]["input_height"].as<int>();
+            params.img_width = model_node["params"]["input_width"].as<int>();
             InferenceResRecModelFunc inference_model = (InferenceResRecModelFunc)dlsym(handle, func_name);
             const char* dlsym_error = dlerror();
             if (dlsym_error) {
@@ -250,7 +245,7 @@ int main(int argc, char **argv) {
                 dlclose(handle);
                 return 1;
             }
-            resnet_result result = inference_model(&rknn_app_ctx, input_data, enable_log);
+            resnet_result result = inference_model(&rknn_app_ctx, input_data, params, enable_log);
         } else if (function_type_str == "pose"){
             const std::string enable_log_str = model_node["enable_log"].as<std::string>();
             bool enable_log = (enable_log_str == "true" || enable_log_str == "True");

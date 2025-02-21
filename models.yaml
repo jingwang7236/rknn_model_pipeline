@@ -30,7 +30,7 @@ models:
   det_knife:
     path: "model/yolov8n_1105_det_knife_i8.rknn"
     function_name: "inference_det_knife_model"
-    function_type: yolo3_det
+    function_type: yolo2_det
     is_quant: true                #量化标志 [bool]
     params:
       input_height: 640           #模型推理高度 [int]  根据模型名获得 
@@ -41,7 +41,7 @@ models:
   det_gun:
     path: "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn"
     function_name: "inference_det_gun_model"
-    function_type: yolo3_det
+    function_type: yolo2_det
     is_quant: true                #量化标志 [bool]
     params:
       input_height: 640           #模型推理高度 [int]  根据模型名获得 
@@ -52,14 +52,14 @@ models:
   det_stat_door:
     path: "model/stat_door_yv8s_250218_384x640_i8.rknn"
     function_name: "inference_det_stat_door_model"
-    function_type: yolo3_det
+    function_type: yolo2_det
     is_quant: true                #量化标志 [bool]
     params:
       input_height: 384           #模型推理高度 [int]  根据模型名获得 
       input_width: 640            #模型推理宽度 [int]  根据模型名获得 
       nms_threshold: 0.6          #NMS阈值 [float]
       box_threshold: 0.25         #box得分阈值 [float]
-    enable_log: False              #log标志 [bool]
+    enable_log: True              #log标志 [bool]
   face_attr:
     path: "model/FaceAttr.rknn"
     function_name: "inference_face_attr_model"
@@ -73,7 +73,7 @@ models:
   det_hand:
     path: "model/det_hand_s_448x800_250110.rknn"
     function_name: "inference_det_hand_model"
-    function_type: yolo3_det
+    function_type: yolo_det
     is_quant: true
     params:
       input_height: 448           #模型推理高度 [int]  根据模型名获得 
@@ -84,7 +84,7 @@ models:
   det_kx:
     path: "model/det_kx_yolov8sd_x0.36_384x640_250213.rknn"
     function_name: "inference_det_kx_model"
-    function_type: yolo3_det
+    function_type: yolo_det
     params:
       input_height: 384           #模型推理高度 [int]  根据模型名获得 
       input_width: 640            #模型推理宽度 [int]  根据模型名获得 
@@ -108,7 +108,7 @@ models:
       input_width: 128            #模型推理宽度 [int]  根据模型名获得 
     enable_log: True
   rec_hand:
-    path: "model/rec_hand_1216_resnet18_1.rknn"
+    path: "model/rec_hand_1216_resnet18.rknn"
     function_name: "inference_rec_hand_resnet18_model"
     function_type: res_rec
     params:

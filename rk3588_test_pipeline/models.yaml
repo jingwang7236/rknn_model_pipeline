@@ -1,3 +1,6 @@
+env_settings:                   #配置运行时环境变量
+  enable_log: false             #开启全局log  [bool]
+
 models:
   header_det:
     path: "model/HeaderDet.rknn"
@@ -24,6 +27,39 @@ models:
     function_name: "inference_person_det_model"
     function_type: ssd_det
     enable_log: True
+  det_knife:
+    path: "model/yolov8n_1105_det_knife_i8.rknn"
+    function_name: "inference_det_knife_model"
+    function_type: yolo2_det
+    is_quant: true                #量化标志 [bool]
+    params:
+      input_height: 640           #模型推理高度 [int]  根据模型名获得 
+      input_width: 640            #模型推理宽度 [int]  根据模型名获得 
+      nms_threshold: 0.6          #NMS阈值 [float]
+      box_threshold: 0.25         #box得分阈值 [float]
+    enable_log: True              #log标志 [bool]
+  det_gun:
+    path: "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn"
+    function_name: "inference_det_gun_model"
+    function_type: yolo2_det
+    is_quant: true                #量化标志 [bool]
+    params:
+      input_height: 640           #模型推理高度 [int]  根据模型名获得 
+      input_width: 640            #模型推理宽度 [int]  根据模型名获得 
+      nms_threshold: 0.6          #NMS阈值 [float]
+      box_threshold: 0.25         #box得分阈值 [float]
+    enable_log: True              #log标志 [bool]
+  det_stat_door:
+    path: "model/stat_door_yv8s_250218_384x640_i8.rknn"
+    function_name: "inference_det_stat_door_model"
+    function_type: yolo2_det
+    is_quant: true                #量化标志 [bool]
+    params:
+      input_height: 384           #模型推理高度 [int]  根据模型名获得 
+      input_width: 640            #模型推理宽度 [int]  根据模型名获得 
+      nms_threshold: 0.6          #NMS阈值 [float]
+      box_threshold: 0.25         #box得分阈值 [float]
+    enable_log: False              #log标志 [bool]
   face_attr:
     path: "model/FaceAttr.rknn"
     function_name: "inference_face_attr_model"
@@ -37,50 +73,76 @@ models:
   det_hand:
     path: "model/det_hand_s_448x800_250110.rknn"
     function_name: "inference_det_hand_model"
-    function_type: yolo2_det
+    function_type: yolo_det
     is_quant: true
+    params:
+      input_height: 448           #模型推理高度 [int]  根据模型名获得 
+      input_width: 800            #模型推理宽度 [int]  根据模型名获得 
+      nms_threshold: 0.7          #NMS阈值 [float]
+      box_threshold: 0.25         #box得分阈值 [float]
+    enable_log: True
+  det_kx:
+    path: "model/det_kx_yolov8sd_x0.36_384x640_250213.rknn"
+    function_name: "inference_det_kx_model"
+    function_type: yolo_det
+    params:
+      input_height: 384           #模型推理高度 [int]  根据模型名获得 
+      input_width: 640            #模型推理宽度 [int]  根据模型名获得 
+      nms_threshold: 0.7          #NMS阈值 [float]
+      box_threshold: 0.25         #box得分阈值 [float]
     enable_log: True
   rec_ren:
-    path: "model/rec_ren_resnet18_x0.25_256x128_250122.rknn"
+    path: "model/rec_ren_resnet18_x0.36_256x128_250122.rknn"
     function_name: "inference_rec_person_resnet18_model"
     function_type: res_rec
+    params:
+      input_height: 256           #模型推理高度 [int]  根据模型名获得 
+      input_width: 128            #模型推理宽度 [int]  根据模型名获得 
     enable_log: True
   rec_ren_mobilenet:
     path: "model/rec_ren_mobilenetv2_x0.25_256x128_250120.rknn"
     function_name: "inference_rec_person_mobilenet_model"
     function_type: res_rec
-    enable_log: True
-  det_kx:
-    path: "model/det_kx_s_24_12_18.rknn"
-    function_name: "inference_det_kx_model"
-    function_type: yolo_det
+    params:
+      input_height: 256           #模型推理高度 [int]  根据模型名获得 
+      input_width: 128            #模型推理宽度 [int]  根据模型名获得 
     enable_log: True
   rec_hand:
     path: "model/rec_hand_1216_resnet18.rknn"
     function_name: "inference_rec_hand_resnet18_model"
     function_type: res_rec
-    enable_log: True
-  pose_ren:
-    path: "model/yolov8s-pose.rknn"
-    function_name: "inference_pose_ren_model"
-    function_type: pose
+    params:
+      input_height: 224           #模型推理高度 [int]  根据模型名获得 
+      input_width: 224            #模型推理宽度 [int]  根据模型名获得 
     enable_log: True
   rec_kx_orient:
     path: "model/rec_kx_orient_1207_resnet18.rknn"
     function_name: "inference_rec_kx_orient_resnet18_model"
     function_type: res_rec
+    params:
+      input_height: 224           #模型推理高度 [int]  根据模型名获得 
+      input_width: 224            #模型推理宽度 [int]  根据模型名获得 
     enable_log: True
   rec_stat_door:
-    path: "model/cls_stat_door_model_resnet18_150108_i8.rknn"
+    path: "model/cls_stat_door_res18_250217_256x128_i8.rknn"  #模型文件存放地址    任务_模型架构_日期_推理尺寸_[量化数据类型].[后缀]
     function_name: "inference_rec_stat_door_resnet18_model"
     function_type: res_rec
+    is_quant: true
+    params:
+      input_height: 256           #模型推理高度 [int]  根据模型名获得 
+      input_width: 128            #模型推理宽度 [int]  根据模型名获得 
+    enable_log: False
+  pose_ren:
+    path: "model/yolov8s-pose.rknn"
+    function_name: "inference_pose_ren_model"
+    function_type: pose
     enable_log: True
   pose_kx_hp:
     path: "model/pose_kx_hp_s_24_12_12.rknn"
     function_name: "inference_pose_kx_hp_model"
     function_type: pose
     enable_log: True
-  pose_kx_sz:  # 报错：Segmentation fault (core dumped)
+  pose_kx_sz: 
     path: "model/pose_kx_sz_s_24_12_07.rknn"
     function_name: "inference_pose_kx_sz_model"
     function_type: pose
@@ -89,42 +151,10 @@ models:
     path: "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn"
     function_name: "inference_obb_stick_model"
     function_type: obb_det
+    is_quant: true
     params:
       input_height: 1024
       input_width: 1024
       nms_threshold: 0.6
       box_threshold: 0.25
     enable_log: True 
-  det_knife:
-    path: "model/yolov8n_1105_det_knife_i8.rknn"
-    function_name: "inference_det_knife_model"
-    function_type: yolo3_det
-    is_quant: true
-    params:
-      input_height: 640
-      input_width: 640
-      nms_threshold: 0.6
-      box_threshold: 0.25
-    enable_log: True
-  det_gun:
-    path: "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn"
-    function_name: "inference_det_gun_model"
-    function_type: yolo3_det
-    is_quant: true
-    params:
-      input_height: 640
-      input_width: 640
-      nms_threshold: 0.6
-      box_threshold: 0.25
-    enable_log: True
-  det_stat_door:
-    path: "model/jhpoc_1225_stat_door_det2_640_rk.rknn"
-    function_name: "inference_det_stat_door_model"
-    function_type: yolo3_det
-    is_quant: false
-    params:
-      input_height: 640
-      input_width: 640
-      nms_threshold: 0.6
-      box_threshold: 0.25
-    enable_log: True
