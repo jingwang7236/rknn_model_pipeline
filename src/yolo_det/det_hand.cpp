@@ -45,6 +45,9 @@ std::map<int, std::string> det_hand_category_map = {
  * - object_detect_result_list: 包含检测结果的结构。
  */
 
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool det_by_square, bool enable_logger) {
     object_detect_result_list od_results;
     int ret = 0;
@@ -122,3 +125,6 @@ object_detect_result_list inference_det_hand_model(rknn_app_context_t *app_ctx, 
 
     return od_results;
 }
+#ifdef __cplusplus
+}
+#endif

@@ -25,51 +25,28 @@
 /*-------------------------------------------
                   Functions
 -------------------------------------------*/
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 retinaface_result inference_face_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
+    int            ret;
     retinaface_result result;
-
-    // cv::Mat orig_img_rgb;
-    // cv::cvtColor(orig_img, orig_img_rgb, cv::COLOR_BGR2RGB);
-    // cv::Mat orig_img 图片转为image_buffer_t格式
-    /*
+    float face_det_threshold = 0.2;
     unsigned char* data = input_data.data;
     int width = input_data.width;
     int height = input_data.height;
     int channel = input_data.channel;
-    */
-    image_buffer_t src_img;
-    memset(&src_img, 0, sizeof(image_buffer_t));
-    src_img.width = input_data.width;
-    src_img.height = input_data.height;
-    src_img.format = IMAGE_FORMAT_RGB888;
-    src_img.size = input_data.width * input_data.height * input_data.channel;
-    src_img.virt_addr = (unsigned char *)malloc(src_img.size);
 
-    if (src_img.virt_addr == NULL) {
-        printf("malloc buffer size:%d fail!\n", src_img.size);
-        return result;
+    cv::Mat cv_img(height, width, CV_8UC3, data);
+    if (cv_img.empty()) {
+        std::cerr << "Image is empty or invalid." << std::endl;
     }
-    memcpy(src_img.virt_addr, input_data.data, src_img.size);
+    // orig_img的通道顺序为cv图片的默认顺序bgr
+    cv::Mat orig_img;
+    cv::cvtColor(cv_img, orig_img, cv::COLOR_RGB2BGR); 
 
-    rknn_context ctx = 0;
-    int            ret;
-    int            model_len = 0;
-    unsigned char* model;
-
-    float face_det_threshold = 0.2;
-    // const char* model_path = "model/RetinaFace.rknn";
-
-    // rknn_app_context_t rknn_app_ctx;
-    // memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-
-    // ret = init_retinaface_model(model_path, &rknn_app_ctx);
-    // if (ret != 0) {
-    //     printf("init_retinaface_model fail! ret=%d model_path=%s\n", ret, model_path);
-    //     return result;
-    // }
-
-    ret = inference_retinaface_model(app_ctx, &src_img, &result);
+    ret = inference_retinaface_model(app_ctx, orig_img, &result);
     if (ret != 0) {
         printf("init_retinaface_model fail! ret=%d\n", ret);
         return result;
@@ -86,6 +63,7 @@ retinaface_result inference_face_det_model(rknn_app_context_t *app_ctx, det_mode
     }
     bool enable_draw_image = false; //画图
     if (enable_draw_image) {
+        cv::Mat orig_img_clone = orig_img.clone();
         for (int i = 0; i < result.count; ++i) {
             if (result.object[i].score < face_det_threshold) {
                 continue;
@@ -94,17 +72,18 @@ retinaface_result inference_face_det_model(rknn_app_context_t *app_ctx, det_mode
             int ry = result.object[i].box.top;
             int rw = result.object[i].box.right - result.object[i].box.left;
             int rh = result.object[i].box.bottom - result.object[i].box.top;
-            draw_rectangle(&src_img, rx, ry, rw, rh, COLOR_GREEN, 3);
-            char score_text[20];
-            snprintf(score_text, 20, "%0.2f", result.object[i].score);
-            
-            draw_text(&src_img, score_text, rx, ry, COLOR_RED, 20);
-            for(int j = 0; j < 5; j++) {
-                draw_circle(&src_img, result.object[i].ponit[j].x, result.object[i].ponit[j].y, 2, COLOR_ORANGE, 4);
-            }
+            cv::Rect box(rx, ry, rw, rh);
+            std::string text = "face";
+            std::string score_str = std::to_string(result.object[i].score);
+            text += " " + score_str;
+            cv::Scalar color(0, 255, 0);  // 绿色
+            cv::rectangle(orig_img_clone, box, color, 2);
+            cv::Point textOrg(box.x, box.y - 10);
+            cv::putText(orig_img_clone, text, textOrg, cv::FONT_HERSHEY_SIMPLEX, 0.9, color, 2);
         }
-        const char* image_path = "face_det_result.png";
-        write_image(image_path, &src_img);
+        std::string image_path_str = "face_det_result.png";
+        const char* image_path = image_path_str.c_str();
+        cv::imwrite(image_path, orig_img_clone);
         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
     }
     
@@ -113,9 +92,9 @@ retinaface_result inference_face_det_model(rknn_app_context_t *app_ctx, det_mode
     // if (ret != 0) {
     //     printf("release_retinaface_model fail! ret=%d\n", ret);
     // }
-    if (src_img.virt_addr != NULL) {
-        free(src_img.virt_addr);
-    }
     return result;
 }
 
+#ifdef __cplusplus
+}
+#endif

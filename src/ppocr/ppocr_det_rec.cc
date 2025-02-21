@@ -37,6 +37,9 @@
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 ppocr_text_recog_array_result_t inference_ppocr_det_rec_model(ppocr_system_app_context *rknn_app_ctx, det_model_input input_data, bool enable_logger=false)
 {
 
@@ -110,3 +113,7 @@ ppocr_text_recog_array_result_t inference_ppocr_det_rec_model(ppocr_system_app_c
 
     return results;
 }
+
+#ifdef __cplusplus
+}
+#endif

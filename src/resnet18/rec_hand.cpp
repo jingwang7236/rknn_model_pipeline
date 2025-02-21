@@ -36,7 +36,9 @@ std::map<int, std::string> rec_hand_category_map = {
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/
-
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger)
 {
     resnet_result od_results;
@@ -97,3 +99,6 @@ resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det
 
     return od_results;
 }
+#ifdef __cplusplus
+}
+#endif

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(test)
+project(main_so)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -38,7 +38,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include/ppocr)
 include_directories(${CMAKE_SOURCE_DIR}/include/stb_image)
 include_directories(${OpenCV_INCLUDE_DIRS})   # opencv
 include_directories(${RKNN_RT_LIB_INCLUDE_DIRS})  # rknn
-
+include_directories(${CMAKE_SOURCE_DIR}/include/yaml-cpp)
 
 find_package(OpenCV REQUIRED)
 message("OpenCV_LIBS:${OpenCV_LIBS}")
@@ -47,17 +47,23 @@ message("RKNN_RT_LIB:${RKNN_RT_LIB}")
 
 # 添加一个可执行文件目标，包括main.cpp和选定的retinaface实现文件
 add_executable(${PROJECT_NAME}
-    main.cpp
+    main_so.cpp
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+
 set(RGA_LIB ${CMAKE_SOURCE_DIR}/lib/librga.so)
 set(jpeg_turbo ${CMAKE_SOURCE_DIR}/lib/libturbojpeg.a)
-set(rknn_model_pipeline ${CMAKE_SOURCE_DIR}/lib/librknn_model_pipeline.a)
+set(rknn_model_pipeline ${CMAKE_SOURCE_DIR}/lib/librknn_model_pipeline.so)
+set(yaml-cpp ${CMAKE_SOURCE_DIR}/lib/libyaml-cpp.a)
+
 target_link_libraries(${PROJECT_NAME}
     ${rknn_model_pipeline}
     ${OpenCV_LIBS}
     ${RKNN_RT_LIB}
     ${jpeg_turbo}
     ${RGA_LIB}
+    ${yaml-cpp}
+    dl
 )
 
 # 如果系统是Linux，设置使用pthread，链接Threads库

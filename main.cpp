@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
     else if (std::string(model_name) == "det_gun") {
 
         /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_det_gun = { 640,384,0.6f,0.25f };
+        model_inference_params params_det_gun = { 640,640,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn";
@@ -227,7 +227,7 @@ int main(int argc, char **argv) {
         }
     }
     else if (std::string(model_name) == "det_stat_door") {
-        model_inference_params params_det_stat_door = { 640,384,0.6f,0.25f };
+        model_inference_params params_det_stat_door = { 640,640,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/jhpoc_1225_stat_door_det2_640_rk.rknn";
@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
         // 检测初始化
         printf("inference_face_attr_model start\n");
         // const char* det_model_path = "model/HeaderDet.rknn";
-        const std::string det_model_path_str = model_node["det_path"].as<std::string>();
+        const std::string det_model_path_str = config["models"]["header_det"]["path"].as<std::string>();
         const char* det_model_path = det_model_path_str.c_str();
         rknn_app_context_t det_rknn_app_ctx;
         memset(&det_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
@@ -267,11 +267,10 @@ int main(int argc, char **argv) {
         rknn_app_context_t cls_rknn_app_ctx;
         memset(&cls_rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* cls_model_path = "model/FaceAttr.rknn";
-        const std::string cls_model_path_str = model_node["cls_path"].as<std::string>();
+        const std::string cls_model_path_str = model_node["path"].as<std::string>();
         const char* cls_model_path = cls_model_path_str.c_str();
         ret = init_model(cls_model_path, &cls_rknn_app_ctx);
         object_detect_result_list det_result = inference_header_det_model(&det_rknn_app_ctx, input_data, false); //头肩检测模型推理
-        det_result.count = det_result.count;
         for (int i = 0; i < det_result.count; ++i) {
             box_rect header_box;  // header的box
             header_box.left = std::max(det_result.results[i].box.left, 0);
@@ -291,10 +290,9 @@ int main(int argc, char **argv) {
     else if (std::string(model_name) == "ppocr"){
         // const char* det_model_path = "model/ppocrv4_det.rknn";
         // const char* rec_model_path = "model/ppocrv4_rec.rknn";
-        const std::string det_model_path_str = model_node["det_path"].as<std::string>();
-        const char* det_model_path = det_model_path_str.c_str();
-        const std::string rec_model_path_str = model_node["rec_path"].as<std::string>();
-        const char* rec_model_path = rec_model_path_str.c_str();
+        const std::vector<std::string> model_path_vec = model_node["path"].as<std::vector<std::string>>();
+        const char* det_model_path = model_path_vec[0].c_str();
+        const char* rec_model_path = model_path_vec[1].c_str();
         ppocr_system_app_context rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(ppocr_system_app_context));
         ret = init_model(det_model_path, &rknn_app_ctx.det_context);
@@ -500,7 +498,7 @@ int main(int argc, char **argv) {
     else if (std::string(model_name) == "obb_stick") {
 
         /* 推理参数 width height nms_ths box_ths*/
-        model_inference_params params_obb_stick = { 640,384,0.6f,0.25f };
+        model_inference_params params_obb_stick = { 1024,1024,0.6f,0.25f };
         rknn_app_context_t rknn_app_ctx;
         memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
         // const char* model_path = "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn";

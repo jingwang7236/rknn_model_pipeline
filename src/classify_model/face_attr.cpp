@@ -15,7 +15,9 @@ using namespace std::chrono;  // 添加这一行
 /*-------------------------------------------
                   Functions
 -------------------------------------------*/
-
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 cls_model_result inference_face_attr_model(rknn_app_context_t *app_ctx, det_model_input input_data, box_rect header_box, bool enable_logger=false)
 {
     cls_model_result result;
@@ -81,3 +83,6 @@ cls_model_result inference_face_attr_model(rknn_app_context_t *app_ctx, det_mode
     return result;
 }
 
+#ifdef __cplusplus
+}
+#endif

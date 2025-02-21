@@ -35,7 +35,9 @@ std::map<int, std::string> rec_ren_category_map_mobilenet = {
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/
-
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 mobilenet_result inference_rec_person_mobilenet_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger)
 {
     mobilenet_result od_results;
@@ -96,3 +98,6 @@ mobilenet_result inference_rec_person_mobilenet_model(rknn_app_context_t *app_ct
 
     return od_results;
 }
+#ifdef __cplusplus
+}
+#endif

@@ -21,7 +21,9 @@ cls_model_inference_params cls_stat_door = { 1, 320, 160 };
 /*-------------------------------------------
 				  Main Function
 -------------------------------------------*/
-
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
 {
 	resnet_result od_results;
@@ -72,3 +74,6 @@ resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx
 
 	return od_results;
 }
+#ifdef __cplusplus
+}
+#endif
