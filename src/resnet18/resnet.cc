@@ -275,3 +275,69 @@ out:
 
     return ret;
 }
+
+int inference_resnet_model_opencv(rknn_app_context_t* app_ctx, void* image_buf, resnet_result* out_result, int topk)
+{
+    /* 返回状态标志 0为正常 */
+    int ret;
+ 
+    rknn_input inputs[1];
+    rknn_output outputs[1];
+
+    if ((!app_ctx) || !(image_buf) || (!out_result))
+    {
+        printf("ERROR: Input app_ctx/image_buf/out_result is null!\n");
+        return -1;
+    }
+
+    /* 初始化IO */
+    memset(out_result, 0x00, sizeof(*out_result));
+    memset(inputs, 0, sizeof(inputs));
+    memset(outputs, 0, sizeof(outputs));
+    ///* 推理期间总时间 */
+    //auto total_start_time = std::chrono::high_resolution_clock::now();
+
+    // Set Input Data
+    inputs[0].index = 0;
+    inputs[0].type = RKNN_TENSOR_UINT8;
+    inputs[0].fmt = RKNN_TENSOR_NHWC;
+    inputs[0].size = app_ctx->model_width * app_ctx->model_height * app_ctx->model_channel;
+    inputs[0].buf = image_buf; //传入cv::Mat类型数据
+
+    ret = rknn_inputs_set(app_ctx->rknn_ctx, 1, inputs);
+    if (ret < 0) {
+        printf("ERROR: rknn_input_set fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Run
+    // printf("rknn_run\n");
+    ret = rknn_run(app_ctx->rknn_ctx, nullptr);
+    if (ret < 0) {
+        printf("ERROR: rknn_run fail! ret=%d\n", ret);
+        return -1;
+    }
+
+    // Get Output
+    outputs[0].want_float = 1;
+
+    ///* 推理时间 */
+    //auto inference_end_time = std::chrono::high_resolution_clock::now();
+    ret = rknn_outputs_get(app_ctx->rknn_ctx, 1, outputs, NULL);
+    if (ret < 0) {
+        printf("ERROR: rknn_outputs_get fail! ret=%d\n", ret);
+        goto out;
+    }
+
+    // Post Process
+    softmax((float*)outputs[0].buf, app_ctx->output_attrs[0].n_elems);
+
+    get_topk_with_indices((float*)outputs[0].buf, app_ctx->output_attrs[0].n_elems, topk, out_result);
+
+    // Remeber to release rknn output
+    rknn_outputs_release(app_ctx->rknn_ctx, 1, outputs);
+
+out:
+    
+    return ret;
+}

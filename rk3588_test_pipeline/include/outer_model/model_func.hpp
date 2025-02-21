@@ -71,6 +71,10 @@ resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx
 
 mobilenet_result inference_rec_stat_door_mobilenetv3_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger = false);
 
+/* rec status door opencv版本 */
+resnet_result inference_rec_stat_door_resnet18_model_opencv(
+    rknn_app_context_t* app_ctx,det_model_input input_data, cls_model_inference_params params_, bool enable_logger);
+
 // 模型管理类
 class ClsModelManager{
     public:
