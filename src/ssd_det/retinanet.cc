@@ -198,7 +198,7 @@ static int filterValidResult(float *scores, float *loc, const float boxPriors[][
     return validCount;
 }
 
-static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, rknn_output outputs[], object_detect_result_list *result, letterbox_four *letter_box, const int num_class, const char* model_name) 
+static int post_process_retinanet(rknn_app_context_t *app_ctx, rknn_output outputs[], object_detect_result_list *result, letterbox_four *letter_box, const int num_class, const char* model_name) 
 {
     float *scores = (float *)outputs[0].buf; // [1, 46440, 7, 0]
     float *location = (float *)outputs[1].buf; // [1, 46440, 4, 0]
@@ -245,7 +245,7 @@ static int post_process_retinanet(rknn_app_context_t *app_ctx, cv::Mat src_img, 
         float y2 = location[n * 4 + 3] - letter_box->top_pad;
         int model_in_w = app_ctx->model_width;
         int model_in_h = app_ctx->model_height;
-        result->results[last_count].box.left   = (int)(clamp(x1, 0, model_in_w) / letter_box->x_scale); // Face box
+        result->results[last_count].box.left   = (int)(clamp(x1, 0, model_in_w) / letter_box->x_scale);
         result->results[last_count].box.top    = (int)(clamp(y1, 0, model_in_h) / letter_box->y_scale);
         result->results[last_count].box.right  = (int)(clamp(x2, 0, model_in_w) / letter_box->x_scale);
         result->results[last_count].box.bottom = (int)(clamp(y2, 0, model_in_h) / letter_box->y_scale);
@@ -370,7 +370,7 @@ int inference_retinanet_model(rknn_app_context_t *app_ctx, cv::Mat src_img, obje
         return ret;
     }
 
-    ret = post_process_retinanet(app_ctx, src_img, outputs, out_result, &letter_box, num_class, model_name);
+    ret = post_process_retinanet(app_ctx, outputs, out_result, &letter_box, num_class, model_name);
     if (ret < 0) {
         printf("post_process_retinaface fail! ret=%d\n", ret);
         return -1;

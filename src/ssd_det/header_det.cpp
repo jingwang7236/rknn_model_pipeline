@@ -19,6 +19,10 @@
 
 */
 
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
+
 object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
     std::string label_name = "header";
@@ -72,6 +76,9 @@ object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx
         // 保存输入图片
         // cv::imwrite("input.png", orig_img_clone);
         for (int i = 0; i < result.count; ++i) {
+            if (result.results[i].prop < det_threshold) {
+                continue;
+            }
             if (enable_draw_image) {
                 int rx = result.results[i].box.left;
                 int ry = result.results[i].box.top;
@@ -88,9 +95,6 @@ object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx
                 cv::putText(orig_img_clone, text, textOrg, cv::FONT_HERSHEY_SIMPLEX, 0.9, color, 2);
                 
             }
-            if (result.results[i].prop < det_threshold) {
-                continue;
-            }
             printf("%s @(%d %d %d %d) score=%f\n", label_name.c_str(), result.results[i].box.left, result.results[i].box.top,
                 result.results[i].box.right, result.results[i].box.bottom, result.results[i].prop);
         }
@@ -101,3 +105,7 @@ object_detect_result_list inference_header_det_model(rknn_app_context_t *app_ctx
         }
     return result;
 }
+
+#ifdef __cplusplus
+}
+#endif

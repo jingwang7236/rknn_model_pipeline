@@ -73,7 +73,7 @@ static int filterValidResult(float *scores, float *loc, float *landms, const flo
     return validCount;
 }
 
-static int post_process_retinaface(rknn_app_context_t *app_ctx, image_buffer_t *src_img, rknn_output outputs[], retinaface_result *result, letterbox_t *letter_box) {
+static int post_process_retinaface(rknn_app_context_t *app_ctx, rknn_output outputs[], retinaface_result *result, letterbox_t *letter_box) {
     float *location = (float *)outputs[0].buf;
     float *scores = (float *)outputs[1].buf;
     float *landms = (float *)outputs[2].buf;
@@ -116,9 +116,7 @@ static int post_process_retinaface(rknn_app_context_t *app_ctx, image_buffer_t *
         if (filter_indices[i] == -1 || props[i] < VIS_THRESHOLD) {
             continue;
         }
-
         int n = filter_indices[i];
-
         float x1 = location[n * 4 + 0] * app_ctx->model_width - letter_box->x_pad;
         float y1 = location[n * 4 + 1] * app_ctx->model_height - letter_box->y_pad;
         float x2 = location[n * 4 + 2] * app_ctx->model_width - letter_box->x_pad;
@@ -130,7 +128,6 @@ static int post_process_retinaface(rknn_app_context_t *app_ctx, image_buffer_t *
         result->object[last_count].box.right  = (int)(clamp(x2, 0, model_in_w) / letter_box->scale);
         result->object[last_count].box.bottom = (int)(clamp(y2, 0, model_in_h) / letter_box->scale);
         result->object[last_count].score = props[i]; // Confidence
-
         for (int j = 0; j < 5; ++j) { // Facial feature points
             float ponit_x = landms[n * 10 + 2 * j] * app_ctx->model_width - letter_box->x_pad;
             float ponit_y = landms[n * 10 + 2 * j + 1] * app_ctx->model_height - letter_box->y_pad;
@@ -243,42 +240,57 @@ int release_retinaface_model(rknn_app_context_t *app_ctx) {
     return 0;
 }
 
-int inference_retinaface_model(rknn_app_context_t *app_ctx, image_buffer_t *src_img, retinaface_result *out_result) {
+static int pre_process_retinaface(rknn_app_context_t *app_ctx, const cv::Mat& orig_img, cv::Mat& dist_img, letterbox_t *letter_box)
+{
+    // 获取原始图像的宽度和高度
+    int originalWidth = orig_img.cols;
+    int originalHeight = orig_img.rows;
+    // 获取目标图像的宽度和高度---正方形
+    int targetWidth = app_ctx->model_width;
+    int targetHeight =  app_ctx->model_height;
+    // 计算缩放比例
+    float widthScale = (float)targetWidth / originalWidth;
+    float heightScale = (float)targetHeight / originalHeight;
+    float scale = std::min(widthScale, heightScale);
+    int newWidth = (int)(originalWidth * scale);
+    int newHeight = (int)(originalHeight * scale);
+    cv::Mat resize_img;
+    cv::resize(orig_img, resize_img, cv::Size(newWidth, newHeight));
+    // 计算需要填充的像素,左上角开始贴图
+    int left_pad = 0;
+    int right_pad = targetWidth - newWidth - left_pad;
+    int top_pad = 0;
+    int bottom_pad = targetHeight - newHeight - top_pad;
+    cv::copyMakeBorder(resize_img, dist_img, top_pad, bottom_pad, left_pad, right_pad, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+    letter_box->scale = scale;
+    letter_box->x_pad = left_pad;
+    letter_box->y_pad = top_pad;
+    return 0;
+}
+
+int inference_retinaface_model(rknn_app_context_t *app_ctx, cv::Mat src_img, retinaface_result *out_result) {
     int ret;
     image_buffer_t img;
     letterbox_t letter_box;
     rknn_input inputs[1];
     rknn_output outputs[app_ctx->io_num.n_output];
-    memset(&img, 0, sizeof(image_buffer_t));
     memset(inputs, 0, sizeof(inputs));
     memset(outputs, 0, sizeof(rknn_output) * 3);
     memset(&letter_box, 0, sizeof(letterbox_t));
-    int bg_color = 114;//letterbox background pixel
 
-    // Pre Process
-    img.width = app_ctx->model_width;
-    img.height = app_ctx->model_height;
-    img.format = IMAGE_FORMAT_RGB888;
-    img.size = get_image_size(&img);
-    img.virt_addr = (unsigned char *)malloc(img.size);
-
-    if (img.virt_addr == NULL) {
-        printf("malloc buffer size:%d fail!\n", img.size);
-        return -1;
-    }
-
-    ret = convert_image_with_letterbox(src_img, &img, &letter_box, bg_color);
+    cv::Mat dist_img;
+    ret = pre_process_retinaface(app_ctx, src_img, dist_img, &letter_box);
     if (ret < 0) {
-        printf("convert_image fail! ret=%d\n", ret);
+        printf("pre_process_retinaface fail! ret=%d\n", ret);
         return -1;
     }
-
+    // cv::imwrite("tmp.png", dist_img);
     // Set Input Data
     inputs[0].index = 0;
     inputs[0].type  = RKNN_TENSOR_UINT8;
     inputs[0].fmt   = RKNN_TENSOR_NHWC;
-    inputs[0].size  = app_ctx->model_width * app_ctx->model_height * app_ctx->model_channel;
-    inputs[0].buf   = img.virt_addr;
+    inputs[0].size  = dist_img.cols * dist_img.rows * dist_img.channels() * sizeof(uint8_t);
+    inputs[0].buf   = dist_img.data;
 
     ret = rknn_inputs_set(app_ctx->rknn_ctx, 1, inputs);
     if (ret < 0) {
@@ -298,6 +310,8 @@ int inference_retinaface_model(rknn_app_context_t *app_ctx, image_buffer_t *src_
     for (int i = 0; i < app_ctx->io_num.n_output; i++) {
         outputs[i].index = i;
         outputs[i].want_float = 1;
+        outputs[i].is_prealloc = 0;
+        outputs[i].buf = (void*)malloc(outputs[i].size);
     }
     ret = rknn_outputs_get(app_ctx->rknn_ctx, 3, outputs, NULL);
     if (ret < 0) {
@@ -305,7 +319,7 @@ int inference_retinaface_model(rknn_app_context_t *app_ctx, image_buffer_t *src_
         goto out;
     }
 
-    ret = post_process_retinaface(app_ctx, src_img, outputs, out_result, &letter_box);
+    ret = post_process_retinaface(app_ctx, outputs, out_result, &letter_box);
     if (ret < 0) {
         printf("post_process_retinaface fail! ret=%d\n", ret);
         return -1;

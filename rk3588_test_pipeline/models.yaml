@@ -1,0 +1,130 @@
+models:
+  header_det:
+    path: "model/HeaderDet.rknn"
+    function_name: "inference_header_det_model"
+    function_type: ssd_det  # 函数输入输出参数类型相同
+    enable_log: True
+  phone_det:
+    path: "model/PhoneDet.rknn"
+    function_name: "inference_phone_det_model"
+    function_type: ssd_det
+    enable_log: True
+  face_det:
+    path: "model/RetinaFace.rknn"
+    function_name: "inference_face_det_model"
+    function_type: ssd_det
+    enable_log: True
+  coco_person_det:
+    path: "model/yolov10s.rknn"
+    function_name: "inference_coco_person_det_model"
+    function_type: ssd_det
+    enable_log: True
+  person_det:
+    path: "model/PersonDet.rknn"
+    function_name: "inference_person_det_model"
+    function_type: ssd_det
+    enable_log: True
+  face_attr:
+    path: "model/FaceAttr.rknn"
+    function_name: "inference_face_attr_model"
+    function_type: face_attr
+    enable_log: True
+  ppocr:
+    path: ["model/ppocrv4_det.rknn", "model/ppocrv4_rec.rknn"]
+    function_name: "inference_ppocr_det_rec_model"
+    function_type: "ppocr"
+    enable_log: True
+  det_hand:
+    path: "model/det_hand_s_448x800_250110.rknn"
+    function_name: "inference_det_hand_model"
+    function_type: yolo2_det
+    is_quant: true
+    enable_log: True
+  rec_ren:
+    path: "model/rec_ren_resnet18_x0.25_256x128_250122.rknn"
+    function_name: "inference_rec_person_resnet18_model"
+    function_type: res_rec
+    enable_log: True
+  rec_ren_mobilenet:
+    path: "model/rec_ren_mobilenetv2_x0.25_256x128_250120.rknn"
+    function_name: "inference_rec_person_mobilenet_model"
+    function_type: res_rec
+    enable_log: True
+  det_kx:
+    path: "model/det_kx_s_24_12_18.rknn"
+    function_name: "inference_det_kx_model"
+    function_type: yolo_det
+    enable_log: True
+  rec_hand:
+    path: "model/rec_hand_1216_resnet18.rknn"
+    function_name: "inference_rec_hand_resnet18_model"
+    function_type: res_rec
+    enable_log: True
+  pose_ren:
+    path: "model/yolov8s-pose.rknn"
+    function_name: "inference_pose_ren_model"
+    function_type: pose
+    enable_log: True
+  rec_kx_orient:
+    path: "model/rec_kx_orient_1207_resnet18.rknn"
+    function_name: "inference_rec_kx_orient_resnet18_model"
+    function_type: res_rec
+    enable_log: True
+  rec_stat_door:
+    path: "model/cls_stat_door_model_resnet18_150108_i8.rknn"
+    function_name: "inference_rec_stat_door_resnet18_model"
+    function_type: res_rec
+    enable_log: True
+  pose_kx_hp:
+    path: "model/pose_kx_hp_s_24_12_12.rknn"
+    function_name: "inference_pose_kx_hp_model"
+    function_type: pose
+    enable_log: True
+  pose_kx_sz:  # 报错：Segmentation fault (core dumped)
+    path: "model/pose_kx_sz_s_24_12_07.rknn"
+    function_name: "inference_pose_kx_sz_model"
+    function_type: pose
+    enable_log: True
+  obb_stick:
+    path: "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn"
+    function_name: "inference_obb_stick_model"
+    function_type: obb_det
+    params:
+      input_height: 1024
+      input_width: 1024
+      nms_threshold: 0.6
+      box_threshold: 0.25
+    enable_log: True 
+  det_knife:
+    path: "model/yolov8n_1105_det_knife_i8.rknn"
+    function_name: "inference_det_knife_model"
+    function_type: yolo3_det
+    is_quant: true
+    params:
+      input_height: 640
+      input_width: 640
+      nms_threshold: 0.6
+      box_threshold: 0.25
+    enable_log: True
+  det_gun:
+    path: "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn"
+    function_name: "inference_det_gun_model"
+    function_type: yolo3_det
+    is_quant: true
+    params:
+      input_height: 640
+      input_width: 640
+      nms_threshold: 0.6
+      box_threshold: 0.25
+    enable_log: True
+  det_stat_door:
+    path: "model/jhpoc_1225_stat_door_det2_640_rk.rknn"
+    function_name: "inference_det_stat_door_model"
+    function_type: yolo3_det
+    is_quant: false
+    params:
+      input_height: 640
+      input_width: 640
+      nms_threshold: 0.6
+      box_threshold: 0.25
+    enable_log: True

@@ -23,6 +23,7 @@ void print_rknn_app_context(const rknn_app_context_t& ctx) {
 /*-------------------------------------------
 				Main  Functions
 -------------------------------------------*/
+
 int main(int argc, char** argv) {
 	if (argc != 3) {
 		printf("%s <model_name> <image_path>\n", argv[0]);

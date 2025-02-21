@@ -18,7 +18,9 @@
 /*-------------------------------------------
                   Main Function
 -------------------------------------------*/
-
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 object_detect_result_list inference_coco_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
     object_detect_result_list result;
@@ -145,3 +147,6 @@ object_detect_result_list inference_coco_person_det_model(rknn_app_context_t *ap
     deinit_post_process();
     return result;
 }
+#ifdef __cplusplus
+}
+#endif

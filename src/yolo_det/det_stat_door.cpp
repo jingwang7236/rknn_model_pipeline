@@ -53,7 +53,9 @@ std::map<int, std::string> det_stat_door_category_map = {
     bool enable_logger)
 
  */
-
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 object_detect_result_list inference_det_stat_door_model(rknn_app_context_t* app_ctx, det_model_input input_data, model_inference_params params_, bool det_by_square, bool enable_logger) {
     object_detect_result_list od_results;
     int ret = 0;
@@ -130,102 +132,104 @@ object_detect_result_list inference_det_stat_door_model(rknn_app_context_t* app_
 
     return od_results;
 }
-
-
-object_detect_result_list inference_det_stat_door_model(rknn_app_context_t *app_ctx, det_model_input input_data, const char* label_txt_path,bool enable_logger = true)
-{
-    object_detect_result_list od_results;
-    
-    image_buffer_t src_image;
-    memset(&src_image, 0, sizeof(image_buffer_t));
-    src_image.width = input_data.width;
-    src_image.height = input_data.height;
-    src_image.format = IMAGE_FORMAT_RGB888;
-    src_image.size = input_data.width * input_data.height * input_data.channel;
-    src_image.virt_addr = (unsigned char*)malloc(src_image.size);
-    if (src_image.virt_addr == NULL) {
-        printf("malloc buffer size:%d fail!\n", src_image.size);
-        return od_results;
-    }
-    memcpy(src_image.virt_addr, input_data.data, src_image.size);
-
-    int ret;
-    // rknn_app_context_t rknn_app_ctx;
-    // memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
-
-    init_post_process(label_txt_path);
-
-    // ret = init_yolov10_model(model_path, &rknn_app_ctx);
-    // if (ret != 0)
-    // {
-    //     printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
-    //     return od_results;
-    // }
-
-    // image_buffer_t src_image;
-    // memset(&src_image, 0, sizeof(image_buffer_t));
-    // ret = read_image(image_path, &src_image);
-
-    // if (ret != 0)
-    // {
-    //     printf("read image fail! ret=%d image_path=%s\n", ret, image_path);
-    //     goto out;
-    // }
-
-    // object_detect_result_list od_results;
-
-    ret = inference_yolov8_model(app_ctx, &src_image, &od_results);
-    if (ret != 0)
-    {
-        printf("init_yolov8_model fail! ret=%d\n", ret);
-        return od_results;
-    }
-
-    // 画框
-    bool draw_box = true;
-    char text[256];
-    int count;
-    for (int i = 0; i < od_results.count; i++)
-    {
-        object_detect_result* det_result = &(od_results.results[i]);
-        std::string cls_name = coco_cls_to_name(det_result->cls_id, 1);
-        if (cls_name != "closed" and cls_name != "open")
-        {
-            continue;
-        }
-        count++;
-        if (enable_logger) {
-            printf("%s @ (%d %d %d %d) %.3f\n", coco_cls_to_name(det_result->cls_id, 1),
-                det_result->box.left, det_result->box.top,
-                det_result->box.right, det_result->box.bottom,
-                det_result->prop);
-        }
-
-        int x1 = det_result->box.left;
-        int y1 = det_result->box.top;
-        int x2 = det_result->box.right;
-        int y2 = det_result->box.bottom;
-        if (draw_box)
-        {
-            draw_rectangle(&src_image, x1, y1, x2 - x1, y2 - y1, COLOR_BLUE, 3);
-            sprintf(text, "%s %.1f%%", coco_cls_to_name(det_result->cls_id), det_result->prop * 100);
-            draw_text(&src_image, text, x1, y1 - 20, COLOR_RED, 10);
-        }
-    }
-    if (draw_box) {
-        const char* image_path = "result_door.png";
-        write_image(image_path, &src_image);
-        std::cout << "Draw result on" << image_path << " is finished." << std::endl;
-    }
-    od_results.count = count;
-
-    deinit_post_process();
-
-
-    if (src_image.virt_addr != NULL)
-    {
-        free(src_image.virt_addr);
-
-    }
-    return od_results;
+#ifdef __cplusplus
 }
+#endif
+
+// object_detect_result_list inference_det_stat_door_model(rknn_app_context_t *app_ctx, det_model_input input_data, const char* label_txt_path,bool enable_logger = true)
+// {
+//     object_detect_result_list od_results;
+    
+//     image_buffer_t src_image;
+//     memset(&src_image, 0, sizeof(image_buffer_t));
+//     src_image.width = input_data.width;
+//     src_image.height = input_data.height;
+//     src_image.format = IMAGE_FORMAT_RGB888;
+//     src_image.size = input_data.width * input_data.height * input_data.channel;
+//     src_image.virt_addr = (unsigned char*)malloc(src_image.size);
+//     if (src_image.virt_addr == NULL) {
+//         printf("malloc buffer size:%d fail!\n", src_image.size);
+//         return od_results;
+//     }
+//     memcpy(src_image.virt_addr, input_data.data, src_image.size);
+
+//     int ret;
+//     // rknn_app_context_t rknn_app_ctx;
+//     // memset(&rknn_app_ctx, 0, sizeof(rknn_app_context_t));
+
+//     init_post_process(label_txt_path);
+
+//     // ret = init_yolov10_model(model_path, &rknn_app_ctx);
+//     // if (ret != 0)
+//     // {
+//     //     printf("init_yolov10_model fail! ret=%d model_path=%s\n", ret, model_path);
+//     //     return od_results;
+//     // }
+
+//     // image_buffer_t src_image;
+//     // memset(&src_image, 0, sizeof(image_buffer_t));
+//     // ret = read_image(image_path, &src_image);
+
+//     // if (ret != 0)
+//     // {
+//     //     printf("read image fail! ret=%d image_path=%s\n", ret, image_path);
+//     //     goto out;
+//     // }
+
+//     // object_detect_result_list od_results;
+
+//     ret = inference_yolov8_model(app_ctx, &src_image, &od_results);
+//     if (ret != 0)
+//     {
+//         printf("init_yolov8_model fail! ret=%d\n", ret);
+//         return od_results;
+//     }
+
+//     // 画框
+//     bool draw_box = true;
+//     char text[256];
+//     int count;
+//     for (int i = 0; i < od_results.count; i++)
+//     {
+//         object_detect_result* det_result = &(od_results.results[i]);
+//         std::string cls_name = coco_cls_to_name(det_result->cls_id, 1);
+//         if (cls_name != "closed" and cls_name != "open")
+//         {
+//             continue;
+//         }
+//         count++;
+//         if (enable_logger) {
+//             printf("%s @ (%d %d %d %d) %.3f\n", coco_cls_to_name(det_result->cls_id, 1),
+//                 det_result->box.left, det_result->box.top,
+//                 det_result->box.right, det_result->box.bottom,
+//                 det_result->prop);
+//         }
+
+//         int x1 = det_result->box.left;
+//         int y1 = det_result->box.top;
+//         int x2 = det_result->box.right;
+//         int y2 = det_result->box.bottom;
+//         if (draw_box)
+//         {
+//             draw_rectangle(&src_image, x1, y1, x2 - x1, y2 - y1, COLOR_BLUE, 3);
+//             sprintf(text, "%s %.1f%%", coco_cls_to_name(det_result->cls_id), det_result->prop * 100);
+//             draw_text(&src_image, text, x1, y1 - 20, COLOR_RED, 10);
+//         }
+//     }
+//     if (draw_box) {
+//         const char* image_path = "result_door.png";
+//         write_image(image_path, &src_image);
+//         std::cout << "Draw result on" << image_path << " is finished." << std::endl;
+//     }
+//     od_results.count = count;
+
+//     deinit_post_process();
+
+
+//     if (src_image.virt_addr != NULL)
+//     {
+//         free(src_image.virt_addr);
+
+//     }
+//     return od_results;
+// }

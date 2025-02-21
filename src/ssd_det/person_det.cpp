@@ -18,6 +18,9 @@
  * @param result:  返回结果
 */
 
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger=false)
 {
     std::string label_name = "person";
@@ -100,3 +103,6 @@ object_detect_result_list inference_person_det_model(rknn_app_context_t *app_ctx
         }
     return result;
 }
+#ifdef __cplusplus
+}
+#endif

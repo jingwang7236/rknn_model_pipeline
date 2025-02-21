@@ -39,60 +39,75 @@ include_directories(${CMAKE_SOURCE_DIR}/include/yaml-cpp)
 
 set(yaml-cpp ${CMAKE_SOURCE_DIR}/third_party/yaml-cpp/libyaml-cpp.a)
 
-
-# 添加静态库目标
+# 添加算法库（静态or动态）目标
 add_subdirectory(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# 添加一个可执行文件目标:main.cpp
-add_executable(${PROJECT_NAME}
-    main.cpp
-    )
+#========================= 调用静态库的main ==========================
 
-target_link_libraries(
-    ${PROJECT_NAME}
+# # 添加一个可执行文件目标:main.cpp
+# add_executable(${PROJECT_NAME}
+#     main.cpp
+#     )
+
+# target_link_libraries(
+#     ${PROJECT_NAME}
+#     rknn_model_pipeline
+#     ${yaml-cpp}
+# )
+
+# # 如果系统是Linux，设置使用pthread，链接Threads库
+# if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+#     message("Linux detected, setting pthread")
+#     set(THREADS_PREFER_PTHREAD_FLAG ON)
+#     find_package(Threads REQUIRED)
+#     target_link_libraries(${PROJECT_NAME} Threads::Threads)
+# endif()
+
+# # 为项目目标设置私有包含目录，包括当前源目录和librknnrt的头文件目录
+# target_include_directories(${PROJECT_NAME} PRIVATE
+#     ${CMAKE_CURRENT_SOURCE_DIR}
+#     ${LIBRKNNRT_INCLUDES}
+# )
+#========================= end ==========================
+
+#========================= 测试模型准确率的test, 调用静态库 ==========================
+# add_executable(test  # 测试模型准确率的程序
+#     test.cpp
+# )
+# target_link_libraries(test
+#     rknn_model_pipeline
+# )
+# target_include_directories(test PRIVATE
+#     ${CMAKE_CURRENT_SOURCE_DIR}
+#     ${LIBRKNNRT_INCLUDES}
+# )
+#========================= end ==========================
+
+#========================= 调用动态库的main_so ==========================
+add_executable( main_so # 模型转换程序
+    main_so.cpp
+)
+# 强制链接器包含所有指定的库
+set_target_properties(main_so PROPERTIES LINK_FLAGS "-Wl,--no-as-needed")
+
+target_link_libraries(main_so PRIVATE
     rknn_model_pipeline
+    dl
     ${yaml-cpp}
 )
 
-# 查找并链接 yaml-cpp 库
-# find_package(yaml-cpp REQUIRED /home/firefly/miniconda3/lib)
-# if(yaml-cpp_FOUND)
-#     message(STATUS "yaml-cpp found")
-#     target_link_libraries(${PROJECT_NAME} yaml-cpp)
-# else()
-#     message(FATAL_ERROR "yaml-cpp not found")
-# endif()
-
-# 如果系统是Linux，设置使用pthread，链接Threads库
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    message("Linux detected, setting pthread")
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads REQUIRED)
-    target_link_libraries(${PROJECT_NAME} Threads::Threads)
-endif()
-
-# 为项目目标设置私有包含目录，包括当前源目录和librknnrt的头文件目录
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(main_so PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${LIBRKNNRT_INCLUDES}
 )
+#========================= end ==========================
 
-add_executable(test  # 测试模型准确率的程序
-    test.cpp
-)
-target_link_libraries(test
-    rknn_model_pipeline
-)
-target_include_directories(test PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${LIBRKNNRT_INCLUDES}
-)
-
+#========================= install start ==========================
 # 安装目标可执行文件到当前目录下
-install(TARGETS rknn_model_pipeline ARCHIVE DESTINATION lib)
-install(TARGETS ${PROJECT_NAME} DESTINATION ./)
+# install(TARGETS rknn_model_pipeline ARCHIVE DESTINATION lib)
+# install(TARGETS ${PROJECT_NAME} DESTINATION ./)
 # 安装测试图片到model目录下
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/test.png DESTINATION ./data)
 # 模型文件拷贝到model目录下
@@ -116,6 +131,9 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/inter_model/yolov10.h DESTINAT
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/stb_image/stb_image_resize2.h DESTINATION ./include)
 # install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/third_party/rknpu2/include/rknn_api.h DESTINATION ./include)
 
+#========================= install end ==========================
+
+#========================= debug start ==========================
 # 设置调试标志
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -o0")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -o0")
@@ -123,3 +141,5 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g -o0")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g -o0")
 set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -g -o0")
 set(CMAKE_BUILD_TYPE Debug)
+
+#========================= debug end ==========================

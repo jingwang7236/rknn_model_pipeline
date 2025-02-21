@@ -51,7 +51,9 @@ object_detect_obb_result_list inference_obb_stick_model(
     bool enable_logger) 
 
 */
-
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 object_detect_obb_result_list inference_obb_stick_model(rknn_app_context_t* app_ctx, det_model_input input_data, model_inference_params params_, bool det_by_square, bool enable_logger) {
     object_detect_obb_result_list od_results;
     int ret = 0;
@@ -131,5 +133,6 @@ object_detect_obb_result_list inference_obb_stick_model(rknn_app_context_t* app_
 
     return od_results;
 }
-
-
+#ifdef __cplusplus
+}
+#endif

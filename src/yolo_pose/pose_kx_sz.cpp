@@ -18,7 +18,7 @@
 #define INPUT_WIDTH_POSE_KX_SZ 480
 #define INPUT_HEIGHT_POSE_KX_SZ 480
 #define CLASS_NUM_POSE_KX_SZ 1
-#define KPT_NUM_POSE_KX_SZ 6
+#define KPT_NUM_POSE_KX_SZ 2
 #define RESULT_NUM_POSE_KX_SZ 4725
 #define NMS_THRESH_POSE_KX_SZ 0.5
 #define BOX_THRESH_POSE_KX_SZ 0.25
@@ -45,6 +45,9 @@ std::map<int, std::string> pose_kx_sz_category_map = {
  * 返回：
  * - object_detect_pose_result_list: 包含关键点检测结果的结构。
  */
+#ifdef __cplusplus
+extern "C" {          // 确保函数名称不会在导出时被修饰
+#endif
 object_detect_pose_result_list inference_pose_kx_sz_model(rknn_app_context_t *app_ctx, det_model_input input_data, bool enable_logger) {
     object_detect_pose_result_list od_results;
     int ret = 0;
@@ -128,3 +131,6 @@ object_detect_pose_result_list inference_pose_kx_sz_model(rknn_app_context_t *ap
 
     return od_results;
 }
+#ifdef __cplusplus
+}
+#endif
