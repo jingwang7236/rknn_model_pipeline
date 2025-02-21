@@ -16,15 +16,17 @@
 #include "stb_image_resize2.h"
 #define READ_IMAGE_TYPE STBIR_RGB
 
-cls_model_inference_params cls_stat_door = { 1, 320, 160 };
+// cls_model_inference_params cls_stat_door = { 1, 320, 160 };
+std::map<int, std::string> cls_stat_door_category_map_mobilenet = { {0,"closed"},{1,"open"},{2,"other"} };
 
 /*-------------------------------------------
 				  Main Function
 -------------------------------------------*/
+
 #ifdef __cplusplus
 extern "C" {          // 确保函数名称不会在导出时被修饰
 #endif
-resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, bool enable_logger = false)
+resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx, det_model_input input_data, cls_model_inference_params cls_stat_door, bool enable_logger = false)
 {
 	resnet_result od_results;
 	memset(&od_results, 0, sizeof(resnet_result));
@@ -64,7 +66,7 @@ resnet_result inference_rec_stat_door_resnet18_model(rknn_app_context_t* app_ctx
 	{
 		od_results.cls = -1;
 		od_results.score = -1;
-		printf("init_rec_ren_resnet_model fail! ret=%d\n", ret);
+		printf("init_rec_stat_door_resnet_model fail! ret=%d\n", ret);
 		free(resized_data);
 		return od_results;
 	}
