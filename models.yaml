@@ -1,3 +1,6 @@
+env_settings:
+  enable_log: true
+
 models:
   header_det:
     path: "model/HeaderDet.rknn"
@@ -36,21 +39,25 @@ models:
     infer_img_height: 256     # 模型推理高度 [int]
     infer_img_width: 128      # 模型推理宽度 [int]
     qnt: true                 # 量化标志 [bool]
+    log: true
   rec_ren_mobilenet:
     path: "model/rec_ren_mobilenetv2_x0.25_256x128_250120.rknn"
     infer_img_height: 256     # 模型推理高度 [int]
     infer_img_width: 128      # 模型推理宽度 [int]
     qnt: true                 # 量化标志 [bool]
+    log: true
   rec_hand:
     path: "model/rec_hand_resnet18_x0.27_160x160_250219.rknn"
     infer_img_height: 160     # 模型推理高度 [int]
     infer_img_width: 160      # 模型推理宽度 [int]
     qnt: true                 # 量化标志 [bool]
+    log: true
   rec_kx_orient:
     path: "model/rec_kx_orient_resnet18_x0.06_160x160_250220.rknn"
     infer_img_height: 160     # 模型推理高度 [int]
     infer_img_width: 160      # 模型推理宽度 [int]
     qnt: true                 # 量化标志 [bool]
+    log: true
   det_hand:
     path: "model/det_hand_s_448x800_250110.rknn"
     infer_img_height: 448     # 模型推理高度 [int]
@@ -58,6 +65,7 @@ models:
     nms_threshold: 0.7        # NMS阈值 [float]
     box_threshold: 0.25       # box得分阈值 [float]
     qnt: true                 # 量化标志 [bool]
+    log: true
   det_kx:
     path: "model/det_kx_yolov8sd_x0.36_384x640_250213.rknn"
     infer_img_height: 384     # 模型推理高度 [int]
@@ -65,6 +73,7 @@ models:
     nms_threshold: 0.7        # NMS阈值 [float]
     box_threshold: 0.25       # box得分阈值 [float]
     qnt: true                 # 量化标志 [bool]
+    log: true
   pose_ren:
     path: "model/yolov8s-pose.rknn"
     # infer_img_height: 640     # 模型推理高度 [int]
@@ -72,10 +81,13 @@ models:
     # nms_threshold: 0.7        # NMS阈值 [float]
     # box_threshold: 0.25       # box得分阈值 [float]
     # kpt_nums: 17              # 关键点的个数
+    log: true
   pose_kx_hp:
     path: "model/pose_kx_hp_s_24_12_12.rknn"
+    log: true
   pose_kx_sz:
     path: "model/pose_kx_sz_s_24_12_07.rknn"
+    log: true
 
   obb_stick:
     path: "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn"
