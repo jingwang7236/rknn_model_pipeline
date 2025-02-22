@@ -51,7 +51,13 @@ object_detect_result_list inference_det_gun_model(
     bool enable_logger);
 */
 
-object_detect_result_list inference_det_gun_model(rknn_app_context_t* app_ctx, det_model_input input_data, model_inference_params params_, bool det_by_square, bool enable_logger) {
+object_detect_result_list inference_det_gun_model(
+    rknn_app_context_t* app_ctx, 
+    det_model_input input_data,
+    model_inference_params params_, 
+    bool det_by_square, 
+    bool enable_logger) {
+
     object_detect_result_list od_results;
     int ret = 0;
 
