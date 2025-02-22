@@ -42,14 +42,14 @@ models:
     infer_img_width: 128      # 模型推理宽度 [int]
     qnt: true                 # 量化标志 [bool]
   rec_hand:
-    path: "model/rec_hand_1216_resnet18_1.rknn"
-    infer_img_height: 224     # 模型推理高度 [int]
-    infer_img_width: 224      # 模型推理宽度 [int]
+    path: "model/rec_hand_resnet18_x0.27_160x160_250219.rknn"
+    infer_img_height: 160     # 模型推理高度 [int]
+    infer_img_width: 160      # 模型推理宽度 [int]
     qnt: true                 # 量化标志 [bool]
   rec_kx_orient:
-    path: "model/rec_kx_orient_1207_resnet18.rknn"
-    infer_img_height: 224     # 模型推理高度 [int]
-    infer_img_width: 224      # 模型推理宽度 [int]
+    path: "model/rec_kx_orient_resnet18_x0.06_160x160_250220.rknn"
+    infer_img_height: 160     # 模型推理高度 [int]
+    infer_img_width: 160      # 模型推理宽度 [int]
     qnt: true                 # 量化标志 [bool]
   det_hand:
     path: "model/det_hand_s_448x800_250110.rknn"
