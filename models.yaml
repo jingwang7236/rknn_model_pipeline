@@ -1,5 +1,7 @@
-env_settings:
-  enable_log: true
+
+env_settings:                   #ÅäÖÃÔËĞĞÊ±»·¾³±äÁ¿
+  enable_log: true             #¿ªÆôÈ«¾Ölog  [bool]
+
 
 models:
   header_det:
@@ -14,20 +16,33 @@ models:
     path: "model/PersonDet.rknn"
   det_knife:
     path: "model/yolov8n_1105_det_knife_i8.rknn"
+
+    infer_img_height: 640         #Ä£ĞÍÍÆÀí¸ß¶È [int]  ¸ù¾İÄ£ĞÍÃû»ñµÃ 
+    infer_img_width: 640          #Ä£ĞÍÍÆÀí¿í¶È [int]  ¸ù¾İÄ£ĞÍÃû»ñµÃ 
+    nms_threshold: 0.6            #NMSãĞÖµ [float]
+    box_threshold: 0.25           #boxµÃ·ÖãĞÖµ [float]
+    qnt: true                     #Á¿»¯±êÖ¾ [bool]
+    log: false                    #log±êÖ¾ [bool]
+
   det_gun:
-    path: "model/jhpoc_yv8s_1212_det_gun_640_i8.rknn"
-    infer_img_height: 640         #æ¨¡å‹æ¨ç†é«˜åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 
-    infer_img_width: 640          #æ¨¡å‹æ¨ç†å®½åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 
-    nms_threshold: 0.6           #NMSé˜ˆå€¼ [float]
-    box_threshold: 0.25          #boxå¾—åˆ†é˜ˆå€¼ [float]
-    qnt: true                     #é‡åŒ–æ ‡å¿— [bool]
+    path: "model/det_gun_yv8s_250220_384_640_x0.53_i8.rknn"
+    infer_img_height: 384         #Ä£ĞÍÍÆÀí¸ß¶È [int]  ¸ù¾İÄ£ĞÍÃû»ñµÃ 
+    infer_img_width: 640          #Ä£ĞÍÍÆÀí¿í¶È [int]  ¸ù¾İÄ£ĞÍÃû»ñµÃ 
+    nms_threshold: 0.6            #NMSãĞÖµ [float]
+    box_threshold: 0.25           #boxµÃ·ÖãĞÖµ [float]
+    qnt: true                     #Á¿»¯±êÖ¾ [bool]
+    log: true                    #log±êÖ¾ [bool]
+
   det_stat_door:
-    path: "model/jhpoc_1225_stat_door_det2_640_rk.rknn"
-    infer_img_height: 640         #æ¨¡å‹æ¨ç†é«˜åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 
-    infer_img_width: 640          #æ¨¡å‹æ¨ç†å®½åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 
-    nms_threshold: 0.6           #NMSé˜ˆå€¼ [float]
-    box_threshold: 0.25          #boxå¾—åˆ†é˜ˆå€¼ [float]
-    qnt: false                    #é‡åŒ–æ ‡å¿— [bool]
+    path: "model/det_stat_door_yv8s_250218_384x640_i8.rknn"
+    infer_img_height: 384         #Ä£ĞÍÍÆÀí¸ß¶È [int]  ¸ù¾İÄ£ĞÍÃû»ñµÃ 
+    infer_img_width: 640          #Ä£ĞÍÍÆÀí¿í¶È [int]  ¸ù¾İÄ£ĞÍÃû»ñµÃ 
+    nms_threshold: 0.6            #NMSãĞÖµ [float]
+    box_threshold: 0.25           #boxµÃ·ÖãĞÖµ [float]
+    qnt: true                     #Á¿»¯±êÖ¾ [bool]
+    log: false                    #log±êÖ¾ [bool]
+
+
   face_attr:
     det_path: "model/HeaderDet.rknn"
     cls_path: "model/FaceAttr.rknn"
@@ -62,24 +77,24 @@ models:
     path: "model/det_hand_s_448x800_250110.rknn"
     infer_img_height: 448     # æ¨¡å‹æ¨ç†é«˜åº¦ [int]
     infer_img_width: 800      # æ¨¡å‹æ¨ç†å®½åº¦ [int]
-    nms_threshold: 0.7        # NMSé˜ˆå€¼ [float]
-    box_threshold: 0.25       # boxå¾—åˆ†é˜ˆå€¼ [float]
+    nms_threshold: 0.7        # NMSé˜ˆå€?[float]
+    box_threshold: 0.25       # boxå¾—åˆ†é˜ˆå€?[float]
     qnt: true                 # é‡åŒ–æ ‡å¿— [bool]
     log: true
   det_kx:
     path: "model/det_kx_yolov8sd_x0.36_384x640_250213.rknn"
     infer_img_height: 384     # æ¨¡å‹æ¨ç†é«˜åº¦ [int]
     infer_img_width: 640      # æ¨¡å‹æ¨ç†å®½åº¦ [int]
-    nms_threshold: 0.7        # NMSé˜ˆå€¼ [float]
-    box_threshold: 0.25       # boxå¾—åˆ†é˜ˆå€¼ [float]
+    nms_threshold: 0.7        # NMSé˜ˆå€?[float]
+    box_threshold: 0.25       # boxå¾—åˆ†é˜ˆå€?[float]
     qnt: true                 # é‡åŒ–æ ‡å¿— [bool]
     log: true
   pose_ren:
     path: "model/yolov8s-pose.rknn"
     # infer_img_height: 640     # æ¨¡å‹æ¨ç†é«˜åº¦ [int]
     # infer_img_width: 640      # æ¨¡å‹æ¨ç†å®½åº¦ [int]
-    # nms_threshold: 0.7        # NMSé˜ˆå€¼ [float]
-    # box_threshold: 0.25       # boxå¾—åˆ†é˜ˆå€¼ [float]
+    # nms_threshold: 0.7        # NMSé˜ˆå€?[float]
+    # box_threshold: 0.25       # boxå¾—åˆ†é˜ˆå€?[float]
     # kpt_nums: 17              # å…³é”®ç‚¹çš„ä¸ªæ•°
     log: true
   pose_kx_hp:
@@ -91,16 +106,17 @@ models:
 
   obb_stick:
     path: "model/jhpoc_250109-test1_obb_stick_1024_i8.rknn"
-    infer_img_height: 1024        #æ¨¡å‹æ¨ç†é«˜åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 
-    infer_img_width: 1024         #æ¨¡å‹æ¨ç†å®½åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 
-    nms_threshold: 0.6           #NMSé˜ˆå€¼ [float]
-    box_threshold: 0.25          #boxå¾—åˆ†é˜ˆå€¼ [float]
+    infer_img_height: 1024        #æ¨¡å‹æ¨ç†é«˜åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾?
+    infer_img_width: 1024         #æ¨¡å‹æ¨ç†å®½åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾?
+    nms_threshold: 0.6           #NMSé˜ˆå€?[float]
+    box_threshold: 0.25          #boxå¾—åˆ†é˜ˆå€?[float]
     qnt: true                     #é‡åŒ–æ ‡å¿— [bool]
 
   rec_stat_door:
     # path: "model/cls_stat_door_model_resnet18_150108_i8.rknn"
     path: "model/cls_stat_door_res18_250217_256x128_i8.rknn"  #æ¨¡å‹æ–‡ä»¶å­˜æ”¾åœ°å€    ä»»åŠ¡_æ¨¡å‹æ¶æ„_æ—¥æœŸ_æ¨ç†å°ºå¯¸_[é‡åŒ–æ•°æ®ç±»å‹].[åç¼€]
     # top: 1                      #æ¨¡å‹softmaxè§„åˆ™  ä¸€èˆ¬æ— éœ€ä¿®æ”¹
-    infer_img_height: 256         #æ¨¡å‹æ¨ç†é«˜åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 256x128
-    infer_img_width: 128          #æ¨¡å‹æ¨ç†å®½åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾— 256x128
+    infer_img_height: 256         #æ¨¡å‹æ¨ç†é«˜åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾?256x128
+    infer_img_width: 128          #æ¨¡å‹æ¨ç†å®½åº¦ [int]  æ ¹æ®æ¨¡å‹åè·å¾?256x128
     qnt: true                     #é‡åŒ–æ ‡å¿— [bool]
+

@@ -98,7 +98,6 @@ resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det
     return od_results;
 }
 
-
 resnet_result inference_rec_hand_resnet18_model(rknn_app_context_t *app_ctx, det_model_input input_data, cls_model_inference_params params_, bool enable_logger)
 {
     resnet_result od_results;
