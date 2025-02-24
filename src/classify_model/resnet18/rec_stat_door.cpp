@@ -12,9 +12,9 @@
 #include "file_utils.h"
 #include "opencv2/opencv.hpp"
 #include "resnet18.h"
-#include "yolo_image_preprocess.h"
 #include "outer_model/model_func.hpp"
 #include "stb_image_resize2.h"
+#include "rec_image_process.h"
 #define READ_IMAGE_TYPE STBIR_RGB
 
 // cls_model_inference_params cls_stat_door = { 1, 320, 160 };
@@ -25,9 +25,9 @@ std::map<int, std::string> cls_stat_door_category_map = { {0,"closed"},{1,"open"
 -------------------------------------------*/
 
 resnet_result inference_rec_stat_door_resnet18_model(
-	rknn_app_context_t* app_ctx, 
-	det_model_input input_data, 
-	cls_model_inference_params cls_stat_door, 
+	rknn_app_context_t* app_ctx,
+	det_model_input input_data,
+	cls_model_inference_params cls_stat_door,
 	bool enable_logger = false)
 {
 	resnet_result od_results;
@@ -90,11 +90,16 @@ resnet_result inference_rec_stat_door_resnet18_model_opencv(
 	memset(&od_results, 0, sizeof(resnet_result));
 
 	/* 预处理resize */
-	ImagePreProcess cls_patch_image_preprocess(input_data.width, input_data.height, params_.img_width, params_.img_height);
-	auto convert_img = cls_patch_image_preprocess.Convert(convertDataToCvMat(input_data));
+	/*ImagePreProcess cls_patch_image_preprocess(input_data.width, input_data.height, params_.img_width, params_.img_height);
+	auto convert_img = cls_patch_image_preprocess.Convert(convertDataToCvMat(input_data));*/
+
+	/* Resize(&src, target_width, target_height) */
+	auto convert_img = Resize(convertToCvMat(input_data), params_.img_width, params_.img_height);
+
+	// std::cout << convert_img->cols << " " << convert_img->rows << std::endl;
 
 	int ret = inference_resnet_model_opencv(app_ctx, convert_img->ptr<unsigned char>(), &od_results, params_.top_k);
-	
+
 	if (ret != 0)
 	{
 		printf("infer_rec_stat_door_resnet_model_opencv fail! ret=%d\n", ret);
@@ -105,7 +110,7 @@ resnet_result inference_rec_stat_door_resnet18_model_opencv(
 	if (enable_logger) {
 		if (!ret) {//推理成功才会打印日志
 
-			std::cout << "Class index: " << od_results.cls << ", Name: "<< cls_stat_door_category_map[od_results.cls] << ", Score: " << od_results.score << std::endl;
+			std::cout << "Class index: " << od_results.cls << ", Name: " << cls_stat_door_category_map[od_results.cls] << ", Score: " << od_results.score << std::endl;
 		}
 	}
 
