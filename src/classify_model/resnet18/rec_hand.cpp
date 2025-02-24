@@ -20,8 +20,8 @@
                 Constants
 -------------------------------------------*/
 #define REC_HAND_RET_TOP_K 1
-#define IMG_HEIGHT_REC_HAND 224
-#define IMG_WIDTH_REC_HAND 224
+#define IMG_HEIGHT_REC_HAND 160
+#define IMG_WIDTH_REC_HAND 160
 #define READ_IMAGE_TYPE_REC_HAND STBIR_RGB
 
 // 定义类别字典

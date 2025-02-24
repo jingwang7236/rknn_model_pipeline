@@ -20,14 +20,16 @@
                 Constants
 -------------------------------------------*/
 #define REC_KX_ORIENT_RET_TOP_K 1
-#define IMG_HEIGHT_REC_KX_ORIENT 224
-#define IMG_WIDTH_REC_KX_ORIENT 224
+#define IMG_HEIGHT_REC_KX_ORIENT 160
+#define IMG_WIDTH_REC_KX_ORIENT 160
 #define READ_IMAGE_TYPE_REC_KX_ORIENT STBIR_RGB
 
 // 定义类别字典
 std::map<int, std::string> rec_kx_orient_category_map = {
     {0, "hp"},
     {1, "sz"},
+    {2, "dk"},
+    {3, "wx"},
 };
 
 /*-------------------------------------------
